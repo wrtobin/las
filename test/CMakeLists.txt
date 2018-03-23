@@ -1,0 +1,18 @@
+function(add_mpi_test name file no_mpi_proc)
+  message(STATUS "Adding test " ${name})
+  add_executable(${name} ${file})
+  target_include_directories(${name} PUBLIC ${test_header_dir})
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    get_target_property(FLGS ${name} LINK_FLAGS_DEBUG)
+    if(FLGS STREQUAL "FLGS-NOTFOUND")
+      SET(FLGS "") # set to empty string
+    endif()
+    SET(FLGS "${FLGS} ${GCC_COVERAGE_LINK_FLAGS}" )
+    set_target_properties(${name} PROPERTIES LINK_FLAGS_DEBUG ${FLGS} )
+  endif()
+  set(test_parameters -np ${no_mpi_proc} ${name} ${ARGN})
+  add_test(NAME ${name} COMMAND "mpirun" ${test_parameters} )
+endfunction(add_mpi_test)
+
+add_mpi_test(csr csr.cc 1)
+target_link_libraries(csr las)
