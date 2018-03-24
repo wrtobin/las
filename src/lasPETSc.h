@@ -3,8 +3,10 @@
 #include "las.h"
 namespace las
 {
-  Mat * createPetscMatrix(int gbl, int lcl);
-  Vec * createPetscVector(int gbl, int lcl);
+  void initPETScLAS(int * argc, char ** argv[], MPI_Comm cm);
+  void finalizePETScLAS();
+  Mat * createPetscMatrix(int gbl, int lcl, MPI_Comm cm);
+  Vec * createPetscVector(int gbl, int lcl, MPI_Comm cm);
   LasOps * getPetscOps();
   LasSolve * createPetscLUSolve();
   LasSolve * createPetscQNSolve(void * a);

@@ -1,4 +1,5 @@
 #include "lasPETSc.h"
+#include "lasComm.h"
 #include <petsc.h>
 #include <petscmat.h>
 #include <petscksp.h>
@@ -6,6 +7,16 @@
 #include <iostream>
 namespace las
 {
+  void initPETScLAS(int * argc, char ** argv[], MPI_Comm cm = LAS_COMM_WORLD)
+  {
+    LAS_COMM_WORLD = cm;
+    PETSC_COMM_WORLD = cm;
+    PetscInitialize(argc,argv,PETSC_NULL,PETSC_NULL);
+  }
+  void finalizePETScLAS()
+  {
+    PetscFinalize();
+  }
   class PetscOps : public LasOps
   {
   public:
@@ -22,10 +33,10 @@ namespace las
     virtual void restore(Vec * v, double *& vls);
   };
   // todo : create variant using nnz structure
-  las::Mat * createPetscMatrix(int g, int l)
+  las::Mat * createPetscMatrix(int g, int l, MPI_Comm cm = LAS_COMM_WORLD)
   {
     ::Mat * m = new ::Mat;
-    MatCreateAIJ(PETSC_COMM_WORLD,
+    MatCreateAIJ(cm,
                  l,l,g,g,
                  sqrt(g), // dnz approximation
                  PETSC_NULL,
@@ -35,10 +46,10 @@ namespace las
     MatSetOption(*m,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);
     return reinterpret_cast<las::Mat*>(m);
   }
-  las::Vec * createPetscVector(int g, int l)
+  las::Vec * createPetscVector(int g, int l, MPI_Comm cm = LAS_COMM_WORLD)
   {
     ::Vec * v = new ::Vec;
-    VecCreateMPI(PETSC_COMM_WORLD,l,g,v);
+    VecCreateMPI(cm,l,g,v);
     VecSetOption(*v,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);
     return reinterpret_cast<las::Vec*>(v);
   }

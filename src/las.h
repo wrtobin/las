@@ -1,5 +1,6 @@
 #ifndef LAS_H_
 #define LAS_H_
+#include "lasComm.h"
 namespace las
 {
   class Mat;

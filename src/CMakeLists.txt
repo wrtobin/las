@@ -1,5 +1,5 @@
-set(las_install las.h lasCSR.h lasSparskitExterns.h lasSparskit.h)
-set(las_sources lasCSR.cc lasCSRBuilder.cc lasSparskitExterns.cc lasSparskit.cc)
+set(las_install las.h lasComm.h lasCSR.h lasSparskitExterns.h lasSparskit.h)
+set(las_sources lasComm.cc lasCSR.cc lasCSRBuilder.cc lasSparskitExterns.cc lasSparskit.cc)
 
 # look for petsc first since it might have some dependencies other libraries use (parmetis, zoltan, hdf5)
 find_package(PETSc)
