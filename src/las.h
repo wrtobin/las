@@ -24,5 +24,10 @@ namespace las
   public:
     virtual void solve(Mat * k, Vec * u, Vec * f) = 0;
   };
+  class LasMultiply
+  {
+  public:
+    virtual void exec(Mat * x, Vec * a, Vec * b) = 0;
+  };
 }
 #endif

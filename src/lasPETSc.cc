@@ -1,10 +1,26 @@
 #include "lasPETSc.h"
 #include <petsc.h>
+#include <petscmat.h>
 #include <petscksp.h>
 #include <petscsnes.h>
 #include <iostream>
 namespace las
 {
+  class PetscOps : public LasOps
+  {
+  public:
+    virtual void zero(Mat * m);
+    virtual void zero(Vec * v);
+    virtual void assemble(Vec * v, int cnt, int * rws, double * vls);
+    virtual void assemble(Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls);
+    virtual void set(Vec * v, int cnt, int * rws, double * vls);
+    virtual void set(Mat * v, int cntr, int * rws, int cntc, int * cls, double * vls);
+    virtual double norm(Vec * v);
+    virtual double dot(Vec * v0, Vec * v1);
+    virtual void axpy(double a, Vec * x, Vec * y);
+    virtual void get(Vec * v, double *& vls);
+    virtual void restore(Vec * v, double *& vls);
+  };
   // todo : create variant using nnz structure
   las::Mat * createPetscMatrix(int g, int l)
   {
@@ -26,11 +42,11 @@ namespace las
     VecSetOption(*v,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);
     return reinterpret_cast<las::Vec*>(v);
   }
-  ::Mat * getPetscMat(las::Mat * m)
+  inline ::Mat * getPetscMat(las::Mat * m)
   {
     return reinterpret_cast<::Mat*>(m);
   }
-  ::Vec * getPetscVec(las::Vec * v)
+  inline ::Vec * getPetscVec(las::Vec * v)
   {
     return reinterpret_cast<::Vec*>(v);
   }
@@ -173,5 +189,19 @@ namespace las
   LasSolve * createPetscQNSolve(void * a)
   {
     return new PetscQNSolve(a);
+  }
+  class PetscMultiply : public LasMultiply
+  {
+    void exec(Mat * x, Vec * a, Vec * b)
+    {
+      ::Mat * px = getPetscMat(x);
+      ::Vec * pa = getPetscVec(a);
+      ::Vec * pb = getPetscVec(b);
+      MatMult(*px,*pa,*pb);
+    }
+  };
+  LasMultiply * createPetscMultiply()
+  {
+    return new PetscMultiply;
   }
 }
