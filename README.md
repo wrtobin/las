@@ -11,6 +11,8 @@ The operations currently exposed through the (simple) API are:
  - a general axpy procedure (y = a*x + y) for vectors x and y and scalar a
  - retrieval of the (local) underlying array of a vector
  - restore the (local) underlying array of a vector
+ - matrix-vector multiplication (Ax = y) (not zero-overhead)
+ - solving a system (Ax = b) (not zero-overhead)
 
 In order to implement a new backend for the API, a developer must create (minimally) two files:
 lasXXX.h and lasXXX_impl.h. The first of which declares a class as follows:
