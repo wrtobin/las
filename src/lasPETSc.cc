@@ -1,5 +1,6 @@
 #include "lasPETSc.h"
 #include "lasComm.h"
+#include "lasDebug.h"
 #include <petsc.h>
 #include <petscmat.h>
 #include <petscksp.h>
@@ -118,27 +119,42 @@ namespace las
   }
   class PetscLUSolve : public LasSolve
   {
+    MPI_Comm cm;
+    ::KSP ksp;
   public:
+    PetscLUSolve(MPI_Comm c = LAS_COMM_WORLD)
+      : cm(c)
+    {
+      KSPCreate(cm,&ksp);
+    }
+    ~PetscLUSolve()
+    {
+      KSPDestroy(&ksp);
+    }
     virtual void solve(las::Mat * k, las::Vec * u, las::Vec * f)
     {
       ::Mat * pk = getPetscMat(k);
       ::Vec * pu = getPetscVec(u);
       ::Vec * pf = getPetscVec(f);
-      ::KSP s;
-      KSPCreate(PETSC_COMM_WORLD,&s);
+      DBG(
+        MPI_Comm kspCm = MPI_COMM_NULL;
+        MPI_Comm matCm = MPI_COMM_NULL;
+        PetscObjectGetComm((PetscObject)ksp,&kspCm);
+        PetscObjectGetComm((PetscObject)pk,&matCm);
+        assert(kspCm == matCm);
+        )
       VecAssemblyBegin(*pf);
       VecAssemblyEnd(*pf);
       MatAssemblyBegin(*pk,MAT_FINAL_ASSEMBLY);
       MatAssemblyEnd(*pk,MAT_FINAL_ASSEMBLY);
-      KSPSetOperators(s,*pk,*pk);
-      KSPSetFromOptions(s);
-      KSPSolve(s,*pf,*pu);
-      KSPDestroy(&s);
+      KSPSetOperators(ksp,*pk,*pk);
+      KSPSetFromOptions(ksp);
+      KSPSolve(ksp,*pf,*pu);
     }
   };
-  LasSolve * createPetscLUSolve()
+  LasSolve * createPetscLUSolve(MPI_Comm cm = LAS_COMM_WORLD)
   {
-    return new PetscLUSolve;
+    return new PetscLUSolve(cm);
   }
   /*
   PetscErrorCode PetscIterate(SNES ,::Vec x,::Vec f,void * i)

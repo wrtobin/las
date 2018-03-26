@@ -8,7 +8,7 @@ namespace las
   Mat * createPetscMatrix(int gbl, int lcl, MPI_Comm cm);
   Vec * createPetscVector(int gbl, int lcl, MPI_Comm cm);
   LasOps * getPetscOps();
-  LasSolve * createPetscLUSolve();
+  LasSolve * createPetscLUSolve(MPI_Comm cm);
   LasSolve * createPetscQNSolve(void * a);
   LasMultiply * createPetscMultiply();
 }
