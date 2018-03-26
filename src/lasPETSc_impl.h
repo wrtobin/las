@@ -28,53 +28,53 @@ namespace las
     return reinterpret_cast<::Vec*>(v);
   }
   inline void PetscOps::_zero(las::Mat * m)
-    {
-      MatZeroEntries(*getPetscMat(m));
-    }
+  {
+    MatZeroEntries(*getPetscMat(m));
+  }
   inline void PetscOps::_zero(las::Vec * v)
-    {
-      VecZeroEntries(*getPetscVec(v));
-    }
+  {
+    VecZeroEntries(*getPetscVec(v));
+  }
   inline void PetscOps::_assemble(las::Vec * v, int cnt, int * rws, double * vls)
-    {
-      VecSetValues(*getPetscVec(v),cnt,rws,vls,ADD_VALUES);
-    }
+  {
+    VecSetValues(*getPetscVec(v),cnt,rws,vls,ADD_VALUES);
+  }
   inline void PetscOps::_assemble(las::Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls)
-    {
-      MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,ADD_VALUES);
-    }
+  {
+    MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,ADD_VALUES);
+  }
   inline void PetscOps::_set(las::Vec * v, int cnt, int * rws, double * vls)
-    {
-      VecSetValues(*getPetscVec(v),cnt,rws,vls,INSERT_VALUES);
-    }
+  {
+    VecSetValues(*getPetscVec(v),cnt,rws,vls,INSERT_VALUES);
+  }
   inline void PetscOps::_set(las::Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls)
-    {
-      MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,INSERT_VALUES);
-    }
+  {
+    MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,INSERT_VALUES);
+  }
   inline double PetscOps::_norm(las::Vec * v)
-    {
-      double n = 0.0;
-      VecNorm(*getPetscVec(v),NORM_2,&n);
-      return n;
-    }
+  {
+    double n = 0.0;
+    VecNorm(*getPetscVec(v),NORM_2,&n);
+    return n;
+  }
   inline double PetscOps::_dot(las::Vec * v0, las::Vec * v1)
-    {
-      double d = 0.0;
-      VecDot(*getPetscVec(v0),*getPetscVec(v1),&d);
-      return d;
-    }
+  {
+    double d = 0.0;
+    VecDot(*getPetscVec(v0),*getPetscVec(v1),&d);
+    return d;
+  }
   inline void PetscOps::_axpy(double a, Vec * x, Vec * y)
-    {
-      VecAXPY(*getPetscVec(y),a,*getPetscVec(x));
-    }
+  {
+    VecAXPY(*getPetscVec(y),a,*getPetscVec(x));
+  }
   inline void PetscOps::_get(las::Vec * v, double *& vls)
-    {
-      VecGetArray(*getPetscVec(v),&vls);
-    }
+  {
+    VecGetArray(*getPetscVec(v),&vls);
+  }
   inline void PetscOps::_restore(las::Vec * v, double *& vls)
-    {
-      VecRestoreArray(*getPetscVec(v),&vls);
-    }
+  {
+    VecRestoreArray(*getPetscVec(v),&vls);
+  }
   // todo : create variant using nnz structure
   inline las::Mat * createPetscMatrix(int g, int l, MPI_Comm cm = LAS_COMM_WORLD)
   {
