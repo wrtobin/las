@@ -11,7 +11,7 @@ int main(int argc, char * argv[])
   assert(eye_csr);
   las::Mat * mat_csr = las::createSparskitMatrix(eye_csr);
   assert(mat_csr);
-  las::LasOps * ops = las::initSparskitOps();
+  las::LasOps<las::skOps> * ops = las::initSparskitOps();
   assert(ops);
   int rwcls[] = {0, 1, 2};
   double vl = 1.0;

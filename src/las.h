@@ -5,20 +5,54 @@ namespace las
 {
   class Mat;
   class Vec;
+  template <class T>
   class LasOps
   {
   public:
-    virtual void zero(Mat * m) = 0;
-    virtual void zero(Vec * v) = 0;
-    virtual void assemble(Vec * v, int cnt, int * rws, double * vls) = 0;
-    virtual void assemble(Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls) = 0;
-    virtual void set(Vec * v, int cnt, int * rws, double * vls) = 0;
-    virtual void set(Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls) = 0;
-    virtual double norm(Vec * v) = 0;
-    virtual double dot(Vec * v0, Vec * v1) = 0;
-    virtual void axpy(double a, Vec * x, Vec * y) = 0;
-    virtual void get(Vec * v, double *& vls) = 0;
-    virtual void restore(Vec * v, double *& vls) = 0;
+    void zero(Mat * m)
+    {
+      static_cast<T*>(this)->_zero(m);
+    }
+    void zero(Vec * v)
+    {
+      static_cast<T*>(this)->_zero(v);
+    }
+    void assemble(Vec * v, int cnt, int * rws, double * vls)
+    {
+      static_cast<T*>(this)->_assemble(v,cnt,rws,vls);
+    }
+    void assemble(Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls)
+    {
+      static_cast<T*>(this)->_assemble(m,cntr,rws,cntc,cls,vls);
+    }
+    void set(Vec * v, int cnt, int * rws, double * vls)
+    {
+      static_cast<T*>(this)->_set(v,cnt,rws,vls);
+    }
+    void set(Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls)
+    {
+      static_cast<T*>(this)->_set(m,cntr,rws,cntc,cls,vls);
+    }
+    double norm(Vec * v)
+    {
+      static_cast<T*>(this)->_norm(v);
+    }
+    double dot(Vec * v0, Vec * v1)
+    {
+      static_cast<T*>(this)->_dot(v0,v1);
+    }
+    void axpy(double a, Vec * x, Vec * y)
+    {
+      static_cast<T*>(this)->_axpy(a,x,y);
+    }
+    void get(Vec * v, double *& vls)
+    {
+      static_cast<T*>(this)->_vet(v,vls);
+    }
+    void restore(Vec * v, double *& vls)
+    {
+      static_cast<T*>(this)->_restore(v,vls);
+    }
   };
   class LasSolve
   {
