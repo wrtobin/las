@@ -2,6 +2,7 @@
 #define LAS_SPARSKIT_IMPL_H_
 #include "lasSparskitExterns.h"
 #include "lasCSR.h"
+#include "lasDebug.h"
 #include <cassert>
 namespace las
 {
@@ -118,7 +119,7 @@ namespace las
       for(int jj = 0; jj < cntc; ++jj)
       {
         double vl = vls[ii * cntc + jj];
-        if(vl != 0.0) // don't want to attempt to access zero locations in a CSR matrix
+        if(vl != 0.0) // don't want to attempt to access zero locations in a sparse matrix
           (*mat)(rws[ii],cols[jj]) += vls[ii * cntc + jj];
       }
   }
@@ -224,7 +225,7 @@ namespace las
   inline double getSparskitMatValue(Mat * k, int rr, int cc)
   {
     skMat * m = getSparskitMatrix(k);
-    int ndofs = m->getCSR()->getNumEqs();
+    DBG(int ndofs = m->getCSR()->getNumEqs());
     assert(rr < ndofs && rr >= 0);
     assert(cc < ndofs && cc >= 0);
     return (*m)(rr,cc);
@@ -232,7 +233,7 @@ namespace las
   inline void setSparskitMatValue(Mat * k, int rr, int cc, double vl)
   {
     skMat * m = getSparskitMatrix(k);
-    int ndofs = m->getCSR()->getNumEqs();
+    DBG(int ndofs = m->getCSR()->getNumEqs());
     assert(rr < ndofs && rr >= 0);
     assert(cc < ndofs && cc >= 0);
     (*m)(rr,cc) = vl;

@@ -23,6 +23,7 @@ namespace las
   }
   int findLocation(int * rws, int rw, int * cls, int cl, int neq)
   {
+    (void)neq;
     int loc = 0;
     assert(rw < neq);
     for(loc = rws[rw]; (loc < rws[rw+1]) && (cls[loc-1] < cl+1); ++loc) {}
