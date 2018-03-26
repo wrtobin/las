@@ -1,6 +1,6 @@
 LAS provides a zero-overhead API to use the general operations of a linear algebra library operating on large (parallel) matrices and vectors. Currently the library only allows double-values as scalars.
 
-Yhe solution process and multiplication process are not zero-overhead calls since the cost of these function calls is significantly less than the cost of the solve or multiplication proceedure.
+The solution process and multiplication process are not zero-overhead calls since the cost of these function calls is significantly less than the cost of the solve or multiplication proceedure.
 
 The operations currently exposed through the (simple) API are:
  - zero a vector or matrix
