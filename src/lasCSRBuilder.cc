@@ -47,7 +47,7 @@ namespace las
   {
     int nnz = 0;
     std::vector<int> rwb(rws+1,1);
-    std::vector<int> clb(rws*rws,0.0);
+    std::vector<int> clb(rws*rws,0);
     for(int ii = 0; ii < rws; ii++)
       for(int jj = 0; jj < cls; jj++)
         if(mat[ii*cls + jj] != 0.0 && addNonzero(&rwb[0],ii,&clb[0],jj,rws))
