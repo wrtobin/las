@@ -1,6 +1,7 @@
 #ifndef LAS_SPARSE_IMPL_H_
 #define LAS_SPARSE_IMPL_H_
 #include <cassert>
+#include <cmath>
 namespace las
 {
   class csrMat
@@ -72,6 +73,13 @@ namespace las
       memset(&vls[0],0.0,sizeof(double)*(cnt+1));
     }
   };
+  inline LasOps<csrOps> * initCSROps()
+  {
+    static csrOps * ops = nullptr;
+    if(ops == nullptr)
+      ops = new csrOps;
+    return ops;
+  }
   inline csrMat * getCSRMat(Mat * m)
   {
     return reinterpret_cast<csrMat*>(m);

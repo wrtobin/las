@@ -1,4 +1,4 @@
-#include "lasSparskit.h"
+#include "lasSparse.h"
 #include <mpi.h>
 #include <cassert>
 #include <sstream>
@@ -9,9 +9,9 @@ int main(int argc, char * argv[])
                    0.0 , 0.0 , 1.0 };
   las::CSR * eye_csr = las::csrFromFull(&eye[0],3,3);
   assert(eye_csr);
-  las::Mat * mat_csr = las::createSparskitMatrix(eye_csr);
+  las::Mat * mat_csr = las::createCSRMatrix(eye_csr);
   assert(mat_csr);
-  las::LasOps<las::skOps> * ops = las::initSparskitOps();
+  las::LasOps<las::csrOps> * ops = las::initCSROps();
   assert(ops);
   int rwcls[] = {0, 1, 2};
   double vl = 1.0;

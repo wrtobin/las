@@ -26,4 +26,5 @@ namespace las
     void _restore(Vec * v, double *& vls);
   };
 }
+#include "lasSparse_impl.h"
 #endif

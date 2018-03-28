@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.8)
 project(las)
 enable_language(CXX)
 enable_language(C)
-enable_language(Fortran)
+if(${BUILD_SPARSKIT})
+  enable_language(Fortran)
+endif()
 cmake_host_system_information(RESULT HOST QUERY HOSTNAME)
 message(STATUS "Configuring to build on: ${HOST}")
 
@@ -55,6 +57,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 endif()
 
 # add Fortran compiler flags
+if(${BUILD_SPARSKIT})
 if("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Cray")
   # todo : set cray-specific fortran flags
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
@@ -72,6 +75,8 @@ endif()
 
 message(STATUS "Configuring sparskit")
 add_subdirectory(sparskit)
+endif()
+
 message(STATUS "Configuring las")
 add_subdirectory(src)
 message(STATUS "Configuring tests")
