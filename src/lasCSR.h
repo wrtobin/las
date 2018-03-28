@@ -1,6 +1,5 @@
 #ifndef LAS_CSR_H_
 #define LAS_CSR_H_
-#include <apfNumbering.h>
 #include <vector>
 namespace las
 {
@@ -36,12 +35,6 @@ namespace las
     int * getRows() { return &rws[0]; }
     int * getCols() { return &cls[0]; }
   };
-  /**
-   * Construct a CSR sparse matrix structure to manage a sparse matrix based
-   *  on the dof numbering of an apf field. This only operates on the local
-   *  values of the numbering, no mesh partitioning is considered.
-   */
-  CSR * createCSR(apf::Numbering * num, int ndofs);
   /**
    * Construct a CSR sparse matrix structure from a full matrix buffer
    * @param mat Pointer to array of rws x cls doubles containing the full matrix

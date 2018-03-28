@@ -8,6 +8,7 @@ set(las_install las.h
                 lasSparskitExterns.h
                 lasSparskit.h
                 lasSparskit_impl.h)
+set(las_headers lasCSRBuilder.h) #non-public headers
 set(las_sources lasComm.cc
                 lasCSR.cc
                 lasCSRBuilder.cc
@@ -16,9 +17,13 @@ set(las_sources lasComm.cc
 
 # look for petsc first since it might have some dependencies other libraries use (parmetis, zoltan, hdf5)
 find_package(PETSc)
-find_package(Scorec REQUIRED)
-set(link_libs ${link_libs} ${SCOREC_LIBRARIES})
-set(include_dirs ${include_dirs} ${SCOREC_INCLUDE_DIRS})
+find_package(Scorec)
+if(SCOREC_FOUND)
+  set(las_install ${las_install} lasCSRCore.h)
+  set(las_sources ${las_sources} lasCSRCore.cc)
+  set(link_libs ${link_libs} ${SCOREC_LIBRARIES})
+  set(include_dirs ${include_dirs} ${SCOREC_INCLUDE_DIRS})
+endif()
 if(PETSC_FOUND)
   set(las_install ${las_install} lasPETSc.h lasPETSc_impl.h)
   set(las_sources ${las_sources} lasPETSc.cc)

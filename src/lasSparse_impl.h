@@ -33,7 +33,7 @@ namespace las
     }
     double * getVals()
     {
-      return &vals[0];
+      return &vls[0];
     }
     // too coupled to the implementation to leave external
     void zero()
