@@ -27,9 +27,10 @@ macro(scorecLibCheck libs isRequired)
   endforeach()
 endmacro(scorecLibCheck)
 
-find_package(ZOLTAN REQUIRED)
-find_package(PARMETIS REQUIRED)
+find_package(ZOLTAN)
+find_package(PARMETIS)
 
+if(ZOLTAN_FOUND AND PARMETIS_FOUND)
 set(SCOREC_LIBS "")
 if(ENABLE_SIMMETRIX)
 set(SCOREC_LIB_NAMES
@@ -49,7 +50,7 @@ set(SCOREC_LIB_NAMES
   spr
   crv
   lion
-  ph 
+  ph
   size
   )
 else()
@@ -72,20 +73,22 @@ pcu
 endif()
 scorecLibCheck("${SCOREC_LIB_NAMES}" TRUE)
 
-find_path(SCOREC_INCLUDE_DIR 
-  NAMES apf.h PCU.h ma.h 
+find_path(SCOREC_INCLUDE_DIR
+  NAMES apf.h PCU.h ma.h
   PATHS ${SCOREC_INCLUDE_DIR})
 if(NOT EXISTS "${SCOREC_INCLUDE_DIR}")
   message(FATAL_ERROR "SCOREC include dir not found")
 endif()
 
-string(REGEX REPLACE 
-  "/include$" "" 
+string(REGEX REPLACE
+  "/include$" ""
   SCOREC_INSTALL_DIR
   "${SCOREC_INCLUDE_DIR}")
 
 set(SCOREC_LIBRARIES ${SCOREC_LIBS} ${ZOLTAN_LIBRARIES} ${PARMETIS_LIBRARIES})
 set(SCOREC_INCLUDE_DIRS ${SCOREC_INCLUDE_DIR})
+
+endif()
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments
@@ -99,7 +102,7 @@ foreach(lib ${SCOREC_LIB_NAMES})
   set(SCOREC_LINK_LIBS "${SCOREC_LINK_LIBS} -l${lib}")
 endforeach()
 
-#pkgconfig  
+#pkgconfig
 set(prefix "${SCOREC_INSTALL_DIR}")
 set(includedir "${SCOREC_INCLUDE_DIR}")
 configure_file(
