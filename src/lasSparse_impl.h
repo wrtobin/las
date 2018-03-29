@@ -2,6 +2,7 @@
 #define LAS_SPARSE_IMPL_H_
 #include <cassert>
 #include <cmath>
+#include <cstring> //memset
 namespace las
 {
   class csrMat
