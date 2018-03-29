@@ -13,7 +13,7 @@ namespace las
       : vls(new double [c->getNumNonzero()+1])
       , csr(c)
     {
-      memset(&vls[0],0.0,sizeof(double)*(csr->getNumNonzero()+1));
+      memset(&vls[0],0,sizeof(double)*(csr->getNumNonzero()+1));
     }
     ~csrMat()
     {
@@ -39,7 +39,7 @@ namespace las
     // too coupled to the implementation to leave external
     void zero()
     {
-      memset(&vls[0],0.0,sizeof(double)*(csr->getNumNonzero()+1));
+      memset(&vls[0],0,sizeof(double)*(csr->getNumNonzero()+1));
     }
   };
   class simpleVec
@@ -70,7 +70,7 @@ namespace las
     // too coupled to the implementation to leave external
     void zero()
     {
-      memset(&vls[0],0.0,sizeof(double)*(cnt+1));
+      memset(&vls[0],0,sizeof(double)*(cnt+1));
     }
   };
   inline LasOps<csrOps> * initCSROps()

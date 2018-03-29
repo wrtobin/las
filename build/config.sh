@@ -16,3 +16,4 @@ cmake .. \
       -DPETSC_DIR=$PETSC_DIR \
       -DPETSC_ARCH=$PETSC_ARCH \
       -DBUILD_SPARSKIT=OFF
+      #-DCUDA_CUDART_LIBRARY= #find_cuda has issues with this sometimes

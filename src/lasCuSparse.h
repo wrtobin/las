@@ -12,4 +12,5 @@ namespace las
   LasSolve * createCuSparseSolve();
   LasMultiply * createCuSparseMultiply();
 }
+#include "lasCuSparse_impl.h"
 #endif

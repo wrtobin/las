@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR) # version 3.8 adds cuda as a language, 3.9 has better VS integration
 project(las)
 enable_language(CXX)
 enable_language(C)
+# enable_language(CUDA) re-enable if we need to start compiling .cu kernels
 if(${BUILD_SPARSKIT})
   enable_language(Fortran)
 endif()
@@ -15,6 +16,7 @@ if(BUILD_SHARED_LIBS)
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 endif()
 
+# c++11 support now happens through target_compile_features() per-target
 # add C++ compiler flags
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Cray")
   # todo :  set cray-specific cxx flags
@@ -29,11 +31,11 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # todo :  version checks to see which c++ standards are available
   #         and warn/error if the version is incompatible
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # todo :  version checks to see which c++ standards are available
   #         and warn/error if the version is incompatible
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif()
 
 # add C compiler flags
@@ -76,6 +78,8 @@ endif()
 message(STATUS "Configuring sparskit")
 add_subdirectory(sparskit)
 endif()
+
+find_package(CUDA)
 
 message(STATUS "Configuring las")
 add_subdirectory(src)

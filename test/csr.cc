@@ -1,5 +1,4 @@
 #include "lasSparse.h"
-#include <mpi.h>
 #include <cassert>
 #include <sstream>
 int main(int argc, char * argv[])
