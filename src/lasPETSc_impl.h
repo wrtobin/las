@@ -75,19 +75,58 @@ namespace las
   {
     VecRestoreArray(*getPetscVec(v),&vls);
   }
-  // todo : create variant using nnz structure
-  inline las::Mat * createPetscMatrix(int g, int l, MPI_Comm cm = LAS_COMM_WORLD)
+  inline las::Mat * createPetscMatrix(int g, int l, int bs = 1, double * dnnz = nullptr, double * onnz = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
   {
+    const char * mat_tps[][2] = { {MATSEQAIJ, MATSEQBAIJ}, {MATMPIAIJ, MPIMPIBAIJ} };
+    bool is_par = cm != MPI_COMM_SELF;
+    bool blk = bs > 1;
     ::Mat * m = new ::Mat;
-    MatCreateAIJ(cm,
-                 l,l,g,g,
-                 sqrt(g), // dnz approximation
-                 PETSC_NULL,
-                 sqrt(g), // onz approximation
-                 PETSC_NULL,
-                 m);
-    MatSetOption(*m,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);
+    MatCreate(cm,m);
+    MatSetType(*m, mat_tps[is_par][blk]);
+    MatSetSizes(*m, l, l, g, g);
+    MatSetBlockSize(*m, bs);
+    if(!is_par)
+    {
+      if(dnnz != nullptr)
+      {
+        if(onnz != nullptr)
+        {
+          for(int ii = 0; ii < l: ++ii)
+            dnnz[ii] += onnz[ii];
+        }
+        if(!blk)
+          MatSeqAIJSetPreallocation(*m,0,&dnnz[0]);
+        else if(blk)
+          MatSeqBAIJSetPreallozation(*m,bs,0,&dnnz[0]);
+      }
+    }
+    else
+    {
+      if(dnnz != nullptr && onnz != nullptr)
+      {
+        if(!blk)
+          MatMPIAIJSetPreallocation(*m,0,&dnnz[0],0,&onnz[0]);
+        else if(blk)
+          MatMPIBAIJSetPreallocation(*m,bs,0,&dnnz[0],0,&onnz[0]);
+      }
+    }
+    if(!blk)
+      MatSetOption(*m,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);
+    if(dnnz != nullptr) // if we preallocated
+      MatSetOption(*m,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);;
     return reinterpret_cast<las::Mat*>(m);
+  }
+  inline las::Vec * createLHSVec(las::Mat * m)
+  {
+    ::Vec * v = new ::Vec;
+    MatCreateVecs(*getPetscMat(m),v,nullptr);
+    return reinterpret_cast<las::Vec*>(v);
+  }
+  inline las::Vec * createRHSVec(las::Mat * m)
+  {
+    ::Vec * v = new ::Vec;
+    MatCreateVecs(*getPetscMat(m),nullptr,v);
+    return reinterpret_cast<las::Vec*>(v);
   }
   inline las::Vec * createPetscVector(int g, int l, MPI_Comm cm = LAS_COMM_WORLD)
   {

@@ -1,6 +1,7 @@
 #ifndef LAS_CUSPARSE_H_
 #define LAS_CUSPARSE_H_
 #include "lasSparse.h"
+#include "lasAlloc.h"
 namespace las
 {
   typedef csrOps cuOps;

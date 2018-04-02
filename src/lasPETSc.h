@@ -6,8 +6,10 @@ namespace las
   class PetscOps;
   void initPETScLAS(int * argc, char ** argv[], MPI_Comm cm);
   void finalizePETScLAS();
-  Mat * createPetscMatrix(int gbl, int lcl, MPI_Comm cm);
+  Mat * createPetscMatrix(int gbl, int lcl, int bs, double * dnnz, double * onnz, MPI_Comm cm);
   Vec * createPetscVector(int gbl, int lcl, MPI_Comm cm);
+  Vec * createLHSVector(Mat * m);
+  Vec * createRHSVector(Mat * m);
   LasOps<PetscOps> * getPetscOps();
   LasSolve * createPetscLUSolve(MPI_Comm cm);
   LasSolve * createPetscQNSolve(void * a);

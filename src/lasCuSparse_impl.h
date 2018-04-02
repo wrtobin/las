@@ -2,14 +2,47 @@
 #define LAS_CUSPARSE_IMPL_H_
 #include "lasSparse.h"
 #include "lasSparse_impl.h"
+#include "lasDebug.h"
 #include "las.h"
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #include <cuSparse.h>
 namespace las
 {
+  // opaque types only used for template specialization
+  class cuHost;
+  class cuDev;
+  typedef cuHost cuDefAlloc;
   typedef csrMat cuMat;
   typedef simpleVec cuVec;
+  template <>
+  inline void alloc<cuHost>(void ** dat, size_t sz)
+  {
+    DBG(cudaError_t status =)
+      cudaMallocHost(dat,sz);
+    assert(status == cudaSuccess && "Allocation of cuda pinned host memory failed.");
+  }
+  template <>
+  inline void dealloc<cuHost>(void ** dat)
+  {
+    DBG(cudaEffor_t status =)
+      cudaFreeHost(dat);
+    assert(statis == cudaSuccess && "Deallocation of cuda pinned host memmory failed.");
+  }
+  template <>
+  inline void alloc<cuDev>(void ** dat, size_t sz)
+  {
+    DBG(cudaError_t status =)
+      cudaMalloc(dat,sz);
+    assert(status == cudaSuccess && "Allocation of cuda device memory failed.");
+  }
+  template <>
+  inline void dealloc<cuDev>(void ** dat)
+  {
+    DBG(cudaError_t status =)
+      cudaFree(dat);
+    assert(status == cudaSucess && "Deallocation of cuda device memory failed.");
+  }
   inline Mat * createCuMat(CSR * csr)
   {
     return createCSRMatrix(csr);
@@ -64,11 +97,11 @@ namespace las
       CSR * csr = A->getCSR();
       int neq = csr->getNumEqs();
       int nnz = csr->getNumNonzero();
-      cudaMalloc((void**)&dev_csrRows, sizeof(int) * (neq + 1));
-      cudaMalloc((void**)&dev_csrCols, sizeof(int) * (nnz));
-      cudaMalloc((void**)&dev_csrVals, sizeof(double) * (nnz));
-      cudaMalloc((void**)&dev_x, sizeof(double) * (nnz));
-      cudaMalloc((void**)&dev_y, sizeof(double) * (nnz));
+      alloc<cuDefAlloc>((void**)&dev_csrRows, sizeof(int) * (neq + 1));
+      alloc<cuDefAlloc>((void**)&dev_csrCols, sizeof(int) * (nnz));
+      alloc<cuDefAlloc>((void**)&dev_csrVals, sizeof(double) * (nnz));
+      alloc<cuDefAlloc>((void**)&dev_x, sizeof(double) * (nnz));
+      alloc<cuDefAlloc>((void**)&dev_y, sizeof(double) * (nnz));
       cudaMemcpy(dev_csrRows, csr->getRows(), sizeof(int) * (neq + 1), cudaMemcpyHostToDevice);
       cudaMemcpy(dev_csrCols, csr->getCols(), sizeof(int) * (nnz), cudaMemcpyHostToDevice);
       cudaMemcpy(dev_csrVals, A->getVals(), sizeof(double) * (nnz), cudaMemcpyHostToDevice);
@@ -93,11 +126,11 @@ namespace las
         &zero, //b
         dev_y);
       cudaMemcpy(&(*Y)[0], dev_y, sizeof(double) * (nnz), cudaMemcpyDeviceToHost);
-      cudaFree(dev_csrRows);
-      cudaFree(dev_csrCols);
-      cudaFree(dev_csrVals);
-      cudaFree(dev_x);
-      cudaFree(dev_y);
+      dealloc<cuDefAlloc>(dev_csrRows);
+      dealloc<cuDefAlloc>(dev_csrCols);
+      dealloc<cuDefAlloc>(dev_csrVals);
+      dealloc<cuDefAlloc>(dev_x);
+      dealloc<cuDefAlloc>(dev_y);
       cublasDestroy(cublas);
       cusparseDestroy(cusparse);
       cudaStreamDestroy(stream);

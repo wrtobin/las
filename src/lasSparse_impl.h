@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstring> //memset
+#include "lasAlloc.h"
 namespace las
 {
   class csrMat
@@ -11,14 +12,15 @@ namespace las
     CSR * csr;
   public:
     csrMat(CSR * c)
-      : vls(new double [c->getNumNonzero()+1])
+      : vls(nullptr)
       , csr(c)
     {
+      alloc<Malloc>((void**)&vls,sizeof(double) * (c->getNumNonzero() + 1));
       memset(&vls[0],0,sizeof(double)*(csr->getNumNonzero()+1));
     }
     ~csrMat()
     {
-      delete [] vls;
+      dealloc<Malloc>((void**)&vls);
     }
     double & operator()(int rr, int cc)
     {
@@ -50,12 +52,14 @@ namespace las
     int cnt;
   public:
     simpleVec(int n)
-      : vls(new double [n+1])
+      : vls(nullptr)
       , cnt(n)
-    { }
+    {
+      alloc<Malloc>((void**)&vls,sizeof(double)*(n+1));
+    }
     ~simpleVec()
     {
-      delete [] vls;
+      dealloc<Malloc>((void**)vls);
     }
     double & operator[](int idx)
     {
