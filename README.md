@@ -35,4 +35,8 @@ Following these guidelines (see lasSparskit.h and lasSparskit_impl.h for an exam
 Until I get around to an actual style guide refer to the SCOREC/core [style guide](https://github.com/SCOREC/core/blob/develop/STYLE.md) and mimic the rest of the codebase. Specifically: spaces not tabs, 2-space indentation, no trailing whitespace, no empty lines.
 
 ## Dependencies
-Currently the library links against libraries from [SCOREC/core](https://github.com/SCOREC/core) and optionally [PETSc](https://www.mcs.anl.gov/petsc/).
+Currently the library has only optional dependencies, but isn't particularly useful without at least one linear algebra backend, though sparskit is included and built by default.
+ * [MPI](https://www.open-mpi.org/) when using the linear algebra backends in parallel on HPC architectures. Basically always build with this if you have it available by setting CC and CXX for the cmake scripts.
+ * [SCOREC/core](https://github.com/SCOREC/core) is used to interface with unstructured meshes / tensor fields / and dof numberings of those tensor fields to develop algorithms to define the sparsity patterns of matrices.
+ * [PETSc](https://www.mcs.anl.gov/petsc/) provides a robust parallel linear algebra library for use in MPI-parallel applications
+ * [cuSparse](http://docs.nvidia.com/cuda/cusparse/index.html) is a sparse matrix linear algebra library for use on CUDA-enable devices
