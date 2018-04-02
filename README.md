@@ -34,6 +34,15 @@ Following these guidelines (see lasSparskit.h and lasSparskit_impl.h for an exam
 
 Until I get around to an actual style guide refer to the SCOREC/core [style guide](https://github.com/SCOREC/core/blob/develop/STYLE.md) and mimic the rest of the codebase. Specifically: spaces not tabs, 2-space indentation, no trailing whitespace, no empty lines.
 
+Always have a line-break for scope-based brackets, since the code style doesn't allow empty lines (vertical whitespace), this causes code blocks to stand out well.
+
+```
+for (i = 0; i < 3; ++i)
+{
+  b[i] = a[i];
+}
+```
+
 ## Dependencies
 Currently the library has only optional dependencies, but isn't particularly useful without at least one linear algebra backend, though sparskit is included and built by default.
  * [MPI](https://www.open-mpi.org/) when using the linear algebra backends in parallel on HPC architectures. Basically always build with this if you have it available by setting CC and CXX for the cmake scripts.
