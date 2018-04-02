@@ -34,13 +34,26 @@ Following these guidelines (see lasSparskit.h and lasSparskit_impl.h for an exam
 
 Until I get around to an actual style guide refer to the SCOREC/core [style guide](https://github.com/SCOREC/core/blob/develop/STYLE.md) and mimic the rest of the codebase. Specifically: spaces not tabs, 2-space indentation, no trailing whitespace, no empty lines.
 
-Always have a line-break for scope-based brackets, since the code style doesn't allow empty lines (vertical whitespace), this causes code blocks to stand out well.
+Always have a line-break for scope-based brackets, since the code style doesn't allow empty lines (vertical whitespace), this causes code blocks to stand out well. Also for iteration variables use two repeated characters ```ii``` instead of ```i``` since this makes searching and highlighting all occurences of the iteration variable more reliable.
 
 ```
-for (i = 0; i < 3; ++i)
+for (ii = 0; ii < 3; ++ii)
 {
-  b[i] = a[i];
+  b[ii] = a[ii];
 }
+```
+
+Constructor initializer lists should start on the line after the constructor function signature, and each subsequent line should start with a comma:
+
+```
+Constructor(int x)
+  : var1(nullptr)
+  , var2(x)
+  , var3()
+  , etc()
+  , etc()
+  , etc()
+{ }
 ```
 
 ## Dependencies
