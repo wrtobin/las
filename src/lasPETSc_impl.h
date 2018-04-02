@@ -35,47 +35,47 @@ namespace las
   {
     VecZeroEntries(*getPetscVec(v));
   }
-  inline void PetscOps::_assemble(las::Vec * v, int cnt, int * rws, double * vls)
+  inline void PetscOps::_assemble(las::Vec * v, int cnt, int * rws, scalar * vls)
   {
     VecSetValues(*getPetscVec(v),cnt,rws,vls,ADD_VALUES);
   }
-  inline void PetscOps::_assemble(las::Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls)
+  inline void PetscOps::_assemble(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
   {
     MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,ADD_VALUES);
   }
-  inline void PetscOps::_set(las::Vec * v, int cnt, int * rws, double * vls)
+  inline void PetscOps::_set(las::Vec * v, int cnt, int * rws, scalar * vls)
   {
     VecSetValues(*getPetscVec(v),cnt,rws,vls,INSERT_VALUES);
   }
-  inline void PetscOps::_set(las::Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls)
+  inline void PetscOps::_set(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
   {
     MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,INSERT_VALUES);
   }
-  inline double PetscOps::_norm(las::Vec * v)
+  inline scalar PetscOps::_norm(las::Vec * v)
   {
-    double n = 0.0;
+    scalar n = 0.0;
     VecNorm(*getPetscVec(v),NORM_2,&n);
     return n;
   }
-  inline double PetscOps::_dot(las::Vec * v0, las::Vec * v1)
+  inline scalar PetscOps::_dot(las::Vec * v0, las::Vec * v1)
   {
-    double d = 0.0;
+    scalar d = 0.0;
     VecDot(*getPetscVec(v0),*getPetscVec(v1),&d);
     return d;
   }
-  inline void PetscOps::_axpy(double a, Vec * x, Vec * y)
+  inline void PetscOps::_axpy(scalar a, Vec * x, Vec * y)
   {
     VecAXPY(*getPetscVec(y),a,*getPetscVec(x));
   }
-  inline void PetscOps::_get(las::Vec * v, double *& vls)
+  inline void PetscOps::_get(las::Vec * v, scalar *& vls)
   {
     VecGetArray(*getPetscVec(v),&vls);
   }
-  inline void PetscOps::_restore(las::Vec * v, double *& vls)
+  inline void PetscOps::_restore(las::Vec * v, scalar *& vls)
   {
     VecRestoreArray(*getPetscVec(v),&vls);
   }
-  inline las::Mat * createPetscMatrix(int g, int l, int bs = 1, double * dnnz = nullptr, double * onnz = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
+  inline las::Mat * createPetscMatrix(int g, int l, int bs = 1, scalar * dnnz = nullptr, scalar * onnz = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
   {
     const char * mat_tps[][2] = { {MATSEQAIJ, MATSEQBAIJ}, {MATMPIAIJ, MPIMPIBAIJ} };
     bool is_par = cm != MPI_COMM_SELF;
@@ -191,7 +191,7 @@ namespace las
     void * hd = i;
     apf::Numbering * fld = NULL;
     hd = byte_read(hd,fld);
-    double * sol = NULL;
+    scalar * sol = NULL;
     las::Vec * lx = reinterpret_cast<las::Vec*>(&x);
     ops->get(lx,sol);
     amsi::AccumOp op;

@@ -16,6 +16,8 @@ if(BUILD_SHARED_LIBS)
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 endif()
 
+#todo : check scalar=double/complex
+
 # c++11 support now happens through target_compile_features() per-target
 # add C++ compiler flags
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Cray")
@@ -83,5 +85,7 @@ find_package(CUDA)
 
 message(STATUS "Configuring las")
 add_subdirectory(src)
+message(STATUS "Configuring las_capi")
+add_subdirectory(capi)
 message(STATUS "Configuring tests")
 add_subdirectory(test)

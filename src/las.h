@@ -1,6 +1,7 @@
 #ifndef LAS_H_
 #define LAS_H_
 #include "lasComm.h"
+#include "lasScalar.h"
 namespace las
 {
   class Mat;
@@ -17,39 +18,39 @@ namespace las
     {
       static_cast<T*>(this)->_zero(v);
     }
-    void assemble(Vec * v, int cnt, int * rws, double * vls)
+    void assemble(Vec * v, int cnt, int * rws, scalar * vls)
     {
       static_cast<T*>(this)->_assemble(v,cnt,rws,vls);
     }
-    void assemble(Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls)
+    void assemble(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
     {
       static_cast<T*>(this)->_assemble(m,cntr,rws,cntc,cls,vls);
     }
-    void set(Vec * v, int cnt, int * rws, double * vls)
+    void set(Vec * v, int cnt, int * rws, scalar * vls)
     {
       static_cast<T*>(this)->_set(v,cnt,rws,vls);
     }
-    void set(Mat * m, int cntr, int * rws, int cntc, int * cls, double * vls)
+    void set(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
     {
       static_cast<T*>(this)->_set(m,cntr,rws,cntc,cls,vls);
     }
-    double norm(Vec * v)
+    scalar norm(Vec * v)
     {
       static_cast<T*>(this)->_norm(v);
     }
-    double dot(Vec * v0, Vec * v1)
+    scalar dot(Vec * v0, Vec * v1)
     {
       static_cast<T*>(this)->_dot(v0,v1);
     }
-    void axpy(double a, Vec * x, Vec * y)
+    void axpy(scalar a, Vec * x, Vec * y)
     {
       static_cast<T*>(this)->_axpy(a,x,y);
     }
-    void get(Vec * v, double *& vls)
+    void get(Vec * v, scalar *& vls)
     {
       static_cast<T*>(this)->_vet(v,vls);
     }
-    void restore(Vec * v, double *& vls)
+    void restore(Vec * v, scalar *& vls)
     {
       static_cast<T*>(this)->_restore(v,vls);
     }

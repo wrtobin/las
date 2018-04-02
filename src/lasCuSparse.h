@@ -5,7 +5,7 @@
 namespace las
 {
   typedef csrOps cuOps;
-  LasOps<cuOps> * initCuSparseOps();
+  LasOps<cuOps> * getCuSparseOps();
   Mat * createCuMat(CSR * csr);
   void destroyCuMat(Mat * m);
   Vec * createCuVec(unsigned n);

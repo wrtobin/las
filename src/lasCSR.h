@@ -1,5 +1,6 @@
 #ifndef LAS_CSR_H_
 #define LAS_CSR_H_
+#include "lasScalar.h"
 #include <vector>
 namespace las
 {
@@ -37,11 +38,11 @@ namespace las
   };
   /**
    * Construct a CSR sparse matrix structure from a full matrix buffer
-   * @param mat Pointer to array of rws x cls doubles containing the full matrix
+   * @param mat Pointer to array of rws x cls scalars containing the full matrix
    * @param rws Number of rows in the full matrix
    * @param cls Number of cls in the full matrix
    */
-  CSR * csrFromFull(double * mat, int rws, int cls);
+  CSR * csrFromFull(scalar * mat, int rws, int cls);
   /**
    *  Produce a full version of the sparse matrix, this is typically
    *   only used for debugging purposes.
@@ -50,7 +51,7 @@ namespace las
    * @param fll_mat A preallocated buffer of length csr->getNumEqs()^2 which will contain
    *                all nonzero and zero values of the matrix;
    */
-  void constructFullMatrix(CSR * csr,double * sprs_mat,double * fll_mat);
+  void constructFullMatrix(CSR * csr,scalar * sprs_mat,scalar * fll_mat);
 }
 #include "lasCSR_impl.h"
 #endif

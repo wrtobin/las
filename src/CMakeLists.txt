@@ -2,9 +2,10 @@ set(las_install las.h
                 lasComm.h
                 lasCSR.h
                 lasCSR_impl.h
+                lasDebug.h
+                lasScalar.h
                 lasSparse.h
-                lasSparse_impl.h
-                lasDebug.h)
+                lasSparse_impl.h)
 set(las_headers lasCSRBuilder.h) #non-public headers
 set(las_sources lasComm.cc
                 lasCSR.cc

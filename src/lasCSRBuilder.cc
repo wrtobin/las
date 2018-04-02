@@ -43,7 +43,7 @@ namespace las
     }
     return result;
   }
-  CSR * csrFromFull(double * mat, int rws, int cls)
+  CSR * csrFromFull(scalar * mat, int rws, int cls)
   {
     int nnz = 0;
     std::vector<int> rwb(rws+1,1);

@@ -59,7 +59,7 @@ namespace las
   {
     destroyVector(v);
   }
-  inline LasOps<cuOps> * initCuSparseOps()
+  inline LasOps<cuOps> * getCuSparseOps()
   {
     static cuOps * ops = nullptr;
     if (ops == nullptr)
@@ -91,24 +91,24 @@ namespace las
       cusparseSetMatType(mat_desc, CUSPARSE_MATRIX_TYPE_GENERAL); // also _SYMMETRIX, _HERMITIAN, _TRIANGULAR
       int * dev_csrRows = nullptr;
       int * dev_csrCols = nullptr;
-      double * dev_csrVals = nullptr;
-      double * dev_x = nullptr;
-      double * dev_y = nullptr;
+      scalar * dev_csrVals = nullptr;
+      scalar * dev_x = nullptr;
+      scalar * dev_y = nullptr;
       CSR * csr = A->getCSR();
       int neq = csr->getNumEqs();
       int nnz = csr->getNumNonzero();
       alloc<cuDefAlloc>((void**)&dev_csrRows, sizeof(int) * (neq + 1));
       alloc<cuDefAlloc>((void**)&dev_csrCols, sizeof(int) * (nnz));
-      alloc<cuDefAlloc>((void**)&dev_csrVals, sizeof(double) * (nnz));
-      alloc<cuDefAlloc>((void**)&dev_x, sizeof(double) * (nnz));
-      alloc<cuDefAlloc>((void**)&dev_y, sizeof(double) * (nnz));
+      alloc<cuDefAlloc>((void**)&dev_csrVals, sizeof(scalar) * (nnz));
+      alloc<cuDefAlloc>((void**)&dev_x, sizeof(scalar) * (nnz));
+      alloc<cuDefAlloc>((void**)&dev_y, sizeof(scalar) * (nnz));
       cudaMemcpy(dev_csrRows, csr->getRows(), sizeof(int) * (neq + 1), cudaMemcpyHostToDevice);
       cudaMemcpy(dev_csrCols, csr->getCols(), sizeof(int) * (nnz), cudaMemcpyHostToDevice);
-      cudaMemcpy(dev_csrVals, A->getVals(), sizeof(double) * (nnz), cudaMemcpyHostToDevice);
-      cudaMemcpy(dev_x, &(*X)[0], sizeof(double) * (nnz), cudaMemcpyHostToDevice);
+      cudaMemcpy(dev_csrVals, A->getVals(), sizeof(scalar) * (nnz), cudaMemcpyHostToDevice);
+      cudaMemcpy(dev_x, &(*X)[0], sizeof(scalar) * (nnz), cudaMemcpyHostToDevice);
       // perform the matrix-vector multiply (this the the general matrix-vector mult. if we have a specific matrix structure (see cusparseSetMatType) there are better blas operations
-      const double alpha = 1.0;
-      const double zero = 0.0;
+      const scalar alpha = 1.0;
+      const scalar zero = 0.0;
       // http://docs.nvidia.com/cuda/cusparse/index.html#cusparse-lt-t-gt-csrmv_mergepath
       // y = \alpha \times \mathit{op}(\mathbf{A}) \times x + \beta \times y
       // y = a * op(A) * x + b * y;
@@ -125,7 +125,7 @@ namespace las
         dev_x,
         &zero, //b
         dev_y);
-      cudaMemcpy(&(*Y)[0], dev_y, sizeof(double) * (nnz), cudaMemcpyDeviceToHost);
+      cudaMemcpy(&(*Y)[0], dev_y, sizeof(scalar) * (nnz), cudaMemcpyDeviceToHost);
       dealloc<cuDefAlloc>(dev_csrRows);
       dealloc<cuDefAlloc>(dev_csrCols);
       dealloc<cuDefAlloc>(dev_csrVals);

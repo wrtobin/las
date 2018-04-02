@@ -15,5 +15,5 @@ cmake .. \
       -DCMAKE_INSTALL_PREFIX="$PREFIX" \
       -DPETSC_DIR=$PETSC_DIR \
       -DPETSC_ARCH=$PETSC_ARCH \
-      -DBUILD_SPARSKIT=OFF
+      -DBUILD_SPARSKIT=ON
       #-DCUDA_CUDART_LIBRARY= #find_cuda has issues with this sometimes

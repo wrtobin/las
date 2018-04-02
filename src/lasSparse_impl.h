@@ -8,21 +8,21 @@ namespace las
 {
   class csrMat
   {
-    double * vls;
+    scalar * vls;
     CSR * csr;
   public:
     csrMat(CSR * c)
       : vls(nullptr)
       , csr(c)
     {
-      alloc<Malloc>((void**)&vls,sizeof(double) * (c->getNumNonzero() + 1));
-      memset(&vls[0],0,sizeof(double)*(csr->getNumNonzero()+1));
+      alloc<Malloc>((void**)&vls,sizeof(scalar) * (c->getNumNonzero() + 1));
+      memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero()+1));
     }
     ~csrMat()
     {
       dealloc<Malloc>((void**)&vls);
     }
-    double & operator()(int rr, int cc)
+    scalar & operator()(int rr, int cc)
     {
       int idx = -1;
       if(rr < 0 || cc < 0)
@@ -35,33 +35,33 @@ namespace las
     {
       return csr;
     }
-    double * getVals()
+    scalar * getVals()
     {
       return &vls[0];
     }
     // too coupled to the implementation to leave external
     void zero()
     {
-      memset(&vls[0],0,sizeof(double)*(csr->getNumNonzero()+1));
+      memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero()+1));
     }
   };
   class simpleVec
   {
   private:
-    double * vls;
+    scalar * vls;
     int cnt;
   public:
     simpleVec(int n)
       : vls(nullptr)
       , cnt(n)
     {
-      alloc<Malloc>((void**)&vls,sizeof(double)*(n+1));
+      alloc<Malloc>((void**)&vls,sizeof(scalar)*(n+1));
     }
     ~simpleVec()
     {
       dealloc<Malloc>((void**)vls);
     }
-    double & operator[](int idx)
+    scalar & operator[](int idx)
     {
       assert(idx < cnt);
       if(idx < 0)
@@ -75,7 +75,7 @@ namespace las
     // too coupled to the implementation to leave external
     void zero()
     {
-      memset(&vls[0],0,sizeof(double)*(cnt+1));
+      memset(&vls[0],0,sizeof(scalar)*(cnt+1));
     }
   };
   inline LasOps<csrOps> * initCSROps()
@@ -117,58 +117,58 @@ namespace las
   {
     getSimpleVec(v)->zero();
   }
-  inline void csrOps::_assemble(Vec * v, int cnt, int * rws, double * vls)
+  inline void csrOps::_assemble(Vec * v, int cnt, int * rws, scalar * vls)
   {
     simpleVec * vec = getSimpleVec(v);
     for(int ii = 0; ii < cnt; ++ii)
       (*vec)[rws[ii]] += vls[ii];
   }
-  inline void csrOps::_assemble(Mat * m, int cntr, int * rws, int cntc, int * cols, double * vls)
+  inline void csrOps::_assemble(Mat * m, int cntr, int * rws, int cntc, int * cols, scalar * vls)
   {
     csrMat * mat = getCSRMat(m);
     for(int ii = 0; ii < cntr; ++ii)
       for(int jj = 0; jj < cntc; ++jj)
       {
-        double vl = vls[ii * cntc + jj];
+        scalar vl = vls[ii * cntc + jj];
         if(vl != 0.0) // don't want to attempt to access zero locations in a sparse matrix
           (*mat)(rws[ii],cols[jj]) += vls[ii * cntc + jj];
       }
   }
-  inline void csrOps::_set(Vec * v, int cnt, int * rws, double * vls)
+  inline void csrOps::_set(Vec * v, int cnt, int * rws, scalar * vls)
   {
     simpleVec * vec = getSimpleVec(v);
     for(int ii = 0; ii < cnt; ++ii)
       (*vec)[rws[ii]] = vls[ii];
   }
-  inline void csrOps::_set(Mat * m, int cntr, int * rws, int cntc, int * cols, double * vls)
+  inline void csrOps::_set(Mat * m, int cntr, int * rws, int cntc, int * cols, scalar * vls)
   {
     csrMat * mat = getCSRMat(m);
     for(int ii = 0; ii < cntr; ++ii)
       for(int jj = 0; jj < cntc; ++jj)
         (*mat)(rws[ii],cols[jj]) = vls[ii * cntc + jj];
   }
-  inline double csrOps::_norm(Vec * v)
+  inline scalar csrOps::_norm(Vec * v)
   {
     simpleVec * vec = getSimpleVec(v);
-    double nrm = 0.0;
+    scalar nrm = 0.0;
     for(int ii = 0; ii < vec->size(); ++ii)
       nrm += (*vec)[ii] * (*vec)[ii];
     nrm = sqrt(nrm);
     return nrm;
   }
-  inline double csrOps::_dot(Vec * v0, Vec * v1)
+  inline scalar csrOps::_dot(Vec * v0, Vec * v1)
   {
     simpleVec * vec0 = getSimpleVec(v0);
     simpleVec * vec1 = getSimpleVec(v1);
     int sz0 = vec0->size();
     assert(sz0 == vec1->size());
-    double dt = 0.0;
+    scalar dt = 0.0;
     for(int ii = 0; ii < sz0; ++ii)
       dt += (*vec0)[ii] * (*vec1)[ii];
     return dt;
   }
   // y = ax + y
-  inline void csrOps::_axpy(double a, Vec * x, Vec * y)
+  inline void csrOps::_axpy(scalar a, Vec * x, Vec * y)
   {
     simpleVec * vx = getSimpleVec(x);
     simpleVec * vy = getSimpleVec(y);
@@ -177,7 +177,7 @@ namespace las
     for(int ii = 0; ii < szx; ++ii)
       (*vy)[ii] = a * (*vx)[ii] + (*vy)[ii];
   }
-  inline void csrOps::_get(Vec * v, double *& vls)
+  inline void csrOps::_get(Vec * v, scalar *& vls)
   {
     simpleVec * vec = getSimpleVec(v);
     vls = &(*vec)[0];
