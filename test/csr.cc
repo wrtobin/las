@@ -1,12 +1,12 @@
 #include "lasSparse.h"
 #include <cassert>
 #include <sstream>
-int main(int argc, char * argv[])
+int main(int, char*[])
 {
   double eye[] = { 1.0 , 0.0 , 0.0 ,
                    0.0 , 1.0 , 0.0 ,
                    0.0 , 0.0 , 1.0 };
-  las::CSR * eye_csr = las::csrFromFull(&eye[0],3,3);
+  las::Sparsity * eye_csr = las::csrFromFull(&eye[0],3,3);
   assert(eye_csr);
   las::Mat * mat_csr = las::createCSRMatrix(eye_csr);
   assert(mat_csr);

@@ -43,7 +43,7 @@ namespace las
     }
     return result;
   }
-  CSR * csrFromFull(scalar * mat, int rws, int cls)
+  Sparsity * csrFromFull(scalar * mat, int rws, int cls)
   {
     int nnz = 0;
     std::vector<int> rwb(rws+1,1);
@@ -54,6 +54,6 @@ namespace las
           nnz++;
     rwb[rws+1] = nnz;
     CSR * rslt = new CSR(rws,nnz,&rwb[0],&clb[0]);
-    return rslt;
+    return reinterpret_cast<Sparsity*>(rslt);
   }
 }

@@ -5,7 +5,7 @@
 namespace las
 {
   typedef csrOps skOps;
-  Mat * createSparskitMatrix(CSR * csr);
+  Mat * createSparskitMatrix(Sparsity * csr);
   void destroySparskitMatrix(Mat * m);
   Vec * createSparskitVector(unsigned n);
   void destroySparskitVector(Vec * v);
@@ -20,6 +20,8 @@ namespace las
   void printSparskitMat(std::ostream &, Mat * m);
   double getSparskitMatValue(Mat *, int rr, int cc);
   void setSparskitMatValue(Mat *, int rr, int cc, double vl);
+  mat_builder getSparskitMatBuilder();
+  vec_builder getSparskitVecBuilder();
 }
 #include "lasSparskit_impl.h"
 #endif

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring> //memset
 #include "lasAlloc.h"
+#include "lasCSR.h"
 namespace las
 {
   class csrMat
@@ -93,9 +94,9 @@ namespace las
   {
     return reinterpret_cast<simpleVec*>(v);
   }
-  inline Mat * createCSRMatrix(CSR * csr)
+  inline Mat * createCSRMatrix(Sparsity * csr)
   {
-    return reinterpret_cast<Mat*>(new csrMat(csr));
+    return reinterpret_cast<Mat*>(new csrMat(reinterpret_cast<CSR*>(csr)));
   }
   inline void destroyCSRMatrix(Mat * m)
   {

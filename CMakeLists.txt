@@ -85,7 +85,5 @@ find_package(CUDA)
 
 message(STATUS "Configuring las")
 add_subdirectory(src)
-message(STATUS "Configuring las_capi")
-add_subdirectory(capi)
 message(STATUS "Configuring tests")
 add_subdirectory(test)

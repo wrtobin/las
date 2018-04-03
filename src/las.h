@@ -6,6 +6,11 @@ namespace las
 {
   class Mat;
   class Vec;
+  class Sparsity;
+  typedef Mat*(*mat_builder)(unsigned lcl, unsigned gbl, unsigned bs, Sparsity * s, MPI_Comm cm);
+  typedef Vec*(*vec_builder)(unsigned lcl, unsigned gbl, unsigned bs, MPI_Comm cm);
+  typedef void(*mat_destroyer)(Mat * m);
+  typedef void(*vec_destroyer)(Vec * v);
   template <class T>
   class LasOps
   {
@@ -36,11 +41,11 @@ namespace las
     }
     scalar norm(Vec * v)
     {
-      static_cast<T*>(this)->_norm(v);
+      return static_cast<T*>(this)->_norm(v);
     }
     scalar dot(Vec * v0, Vec * v1)
     {
-      static_cast<T*>(this)->_dot(v0,v1);
+      return static_cast<T*>(this)->_dot(v0,v1);
     }
     void axpy(scalar a, Vec * x, Vec * y)
     {
@@ -48,7 +53,7 @@ namespace las
     }
     void get(Vec * v, scalar *& vls)
     {
-      static_cast<T*>(this)->_vet(v,vls);
+      static_cast<T*>(this)->_get(v,vls);
     }
     void restore(Vec * v, scalar *& vls)
     {

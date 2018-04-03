@@ -34,7 +34,7 @@ namespace las
     // the matrix k must have a csr format identical to that used previously in a normal SparskitLU solve
     virtual void solve(Mat * k, Vec * u, Vec * f);
   };
-  inline Mat * createSparskitMatrix(CSR * csr)
+  inline Mat * createSparskitMatrix(Sparsity * csr)
   {
     return createCSRMatrix(csr);
   }
@@ -147,6 +147,29 @@ namespace las
            bfrs->matrixBuffer(),
            bfrs->colsBuffer(),
            bfrs->rowsBuffer());
+  }
+  inline mat_builder getSparskitMatBuilder()
+  {
+    return
+      [](unsigned,
+         unsigned,
+         unsigned,
+         Sparsity * csr,
+         MPI_Comm)
+    {
+      return createSparskitMatrix(csr);
+    };
+  }
+  inline vec_builder getSparskitVecBuilder()
+  {
+    return
+      [](unsigned lcl,
+         unsigned,
+         unsigned,
+         MPI_Comm)
+    {
+      return createSparskitVector(lcl);
+    };
   }
 }
 #endif

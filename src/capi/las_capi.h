@@ -1,6 +1,7 @@
 #ifndef LAS_CAPI_H_
 #define LAS_CAPI_H_
 #include "lasScalar.h"
+#include <mpi.h>
 #ifdef __cplusplus
 extern "C"
 {
@@ -8,9 +9,17 @@ extern "C"
 /* opaque c types */
 struct las_mat;
 struct las_vec;
+struct las_sparsity;
 /* utility */
 void las_init(int * argc, char * argv[], MPI_Comm cm);
 void las_free();
+/* creation/deletion */
+/* las_sparsity * las_create_csr(mesh/field/num) */
+/* las_sparsity * las_create_nnz(mesh/field/num) */
+las_mat * las_create_mat(unsigned lcl, unsigned gbl, unsigned bs, las_sparsity * sparsity, MPI_Comm cm);
+void las_destroy_mat(las_mat * m);
+las_vec * las_create_vec(unsigned sz);
+void las_destory_vec(las_vec * v);
 /* mat operations */
 void las_zero_mat(las_mat * m);
 void las_assemble_mat(las_mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls);

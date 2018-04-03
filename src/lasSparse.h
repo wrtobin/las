@@ -1,10 +1,9 @@
 #ifndef LAS_SPARSE_H_
 #define LAS_SPARSE_H_
 #include "las.h"
-#include "lasCSR.h"
 namespace las
 {
-  Mat * createCSRMatrix(CSR * csr);
+  Mat * createCSRMatrix(Sparsity* csr);
   void destroyCSRMatrix(Mat * m);
   Vec * createVector(unsigned n);
   void destroyVector(Vec * v);

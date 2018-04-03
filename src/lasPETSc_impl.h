@@ -2,6 +2,7 @@
 #define LAS_PETSC_IMPL_H_
 #include "lasComm.h"
 #include "lasDebug.h"
+#include "lasNNZ.h"
 #include <petsc.h>
 #include <petscmat.h>
 #include <petscksp.h>
@@ -75,9 +76,11 @@ namespace las
   {
     VecRestoreArray(*getPetscVec(v),&vls);
   }
-  inline las::Mat * createPetscMatrix(int g, int l, int bs = 1, scalar * dnnz = nullptr, scalar * onnz = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
+  inline las::Mat * createPetscMatrix(unsigned l, unsigned g, unsigned bs = 1, Sparsity * sprs = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
   {
-    const char * mat_tps[][2] = { {MATSEQAIJ, MATSEQBAIJ}, {MATMPIAIJ, MPIMPIBAIJ} };
+    bool have_sparsity = sprs != nullptr;
+    NNZ * nnz = have_sparsity ? reinterpret_cast<NNZ*>(sprs) : nullptr;
+    const char * mat_tps[][2] = { {MATSEQAIJ, MATSEQBAIJ}, {MATMPIAIJ, MATMPIBAIJ} };
     bool is_par = cm != MPI_COMM_SELF;
     bool blk = bs > 1;
     ::Mat * m = new ::Mat;
@@ -85,35 +88,37 @@ namespace las
     MatSetType(*m, mat_tps[is_par][blk]);
     MatSetSizes(*m, l, l, g, g);
     MatSetBlockSize(*m, bs);
-    if(!is_par)
+    if(have_sparsity)
     {
-      if(dnnz != nullptr)
+      if(!is_par)
       {
-        if(onnz != nullptr)
+        if(nnz->dnnz.size() == l)
         {
-          for(int ii = 0; ii < l: ++ii)
-            dnnz[ii] += onnz[ii];
+          if(nnz->onnz.size() == l)
+          {
+            for(unsigned ii = 0; ii < l; ++ii)
+              nnz->dnnz[ii] += nnz->onnz[ii];
+          }
+          if(!blk)
+            MatSeqAIJSetPreallocation(*m,0,&nnz->dnnz[0]);
+          else if(blk)
+            MatSeqBAIJSetPreallocation(*m,bs,0,&nnz->dnnz[0]);
         }
-        if(!blk)
-          MatSeqAIJSetPreallocation(*m,0,&dnnz[0]);
-        else if(blk)
-          MatSeqBAIJSetPreallozation(*m,bs,0,&dnnz[0]);
       }
-    }
-    else
-    {
-      if(dnnz != nullptr && onnz != nullptr)
+      else
       {
-        if(!blk)
-          MatMPIAIJSetPreallocation(*m,0,&dnnz[0],0,&onnz[0]);
-        else if(blk)
-          MatMPIBAIJSetPreallocation(*m,bs,0,&dnnz[0],0,&onnz[0]);
+        if(nnz->dnnz.size() == l && nnz->onnz.size() == l)
+        {
+          if(!blk)
+            MatMPIAIJSetPreallocation(*m,0,&nnz->dnnz[0],0,&nnz->onnz[0]);
+          else if(blk)
+            MatMPIBAIJSetPreallocation(*m,bs,0,&nnz->dnnz[0],0,&nnz->onnz[0]);
+        }
       }
+      MatSetOption(*m,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);
     }
     if(!blk)
       MatSetOption(*m,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);
-    if(dnnz != nullptr) // if we preallocated
-      MatSetOption(*m,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);;
     return reinterpret_cast<las::Mat*>(m);
   }
   inline las::Vec * createLHSVec(las::Mat * m)
@@ -128,10 +133,11 @@ namespace las
     MatCreateVecs(*getPetscMat(m),nullptr,v);
     return reinterpret_cast<las::Vec*>(v);
   }
-  inline las::Vec * createPetscVector(int g, int l, MPI_Comm cm = LAS_COMM_WORLD)
+  inline las::Vec * createPetscVector(unsigned l, unsigned g, unsigned bs, MPI_Comm cm = LAS_COMM_WORLD)
   {
     ::Vec * v = new ::Vec;
     VecCreateMPI(cm,l,g,v);
+    VecSetBlockSize(*v,bs);
     VecSetOption(*v,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);
     return reinterpret_cast<las::Vec*>(v);
   }
@@ -216,9 +222,9 @@ namespace las
   class PetscQNSolve : public LasSolve
   {
   private:
-    void * args;
+    //void * args;
   public:
-    PetscQNSolve(void * a) : args(a)
+    PetscQNSolve(void *)// : args(a)
     {}
     virtual void solve(las::Mat * k, las::Vec * u, las::Vec * f)
     {
@@ -255,6 +261,29 @@ namespace las
   inline LasMultiply * createPetscMultiply()
   {
     return new PetscMultiply;
+  }
+  inline mat_builder getPetscMatBuilder()
+  {
+    return
+      [](unsigned lcl,
+         unsigned gbl,
+         unsigned bs,
+         Sparsity * sprs,
+         MPI_Comm cm)
+   {
+     return createPetscMatrix(lcl,gbl,bs,sprs,cm);
+   };
+  }
+  inline vec_builder getPetscVecBuilder()
+  {
+    return
+      [](unsigned lcl,
+         unsigned gbl,
+         unsigned bs,
+         MPI_Comm cm)
+    {
+      return createPetscVector(lcl,gbl,bs,cm);
+    };
   }
 }
 #endif
