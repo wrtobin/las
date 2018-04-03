@@ -1,7 +1,7 @@
 #ifndef LAS_CAPI_H_
 #define LAS_CAPI_H_
 #include "lasScalar.h"
-#include <mpi.h>
+#include "lasComm.h"
 #ifdef __cplusplus
 extern "C"
 {
