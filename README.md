@@ -24,7 +24,7 @@ lasXXX.h and lasXXX_impl.h. The first of which declares a class as follows:
 class xxxOps : public LasOps\<xxxOps\>
 { ... };
 
-**The implementation of the class interface functions may occur inline in the function declaration in lasXXX.h for ONLY FOR simple functions which DO NOT DIRECTLY CALL ANY BACKEND API functions.**
+**The implementation of the class interface functions may occur inline in the function declaration in lasXXX.h ONLY FOR simple functions which DO NOT DIRECTLY CALL ANY BACKEND API functions.**
 
 **Anything which explicitly makes calls to the backend API is implemented in the lasXXX_impl.h file, and is defined as an inline member function.**
 
