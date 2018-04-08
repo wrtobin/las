@@ -6,6 +6,7 @@ The solution process and multiplication process are not zero-overhead calls sinc
 
 The operations currently exposed through the (simple) API are:
  - zero a vector or matrix
+ - zero all nonzeros in rows in a matrix
  - assemble (add) values to multiple locations in a vector or matrix
  - set values at multiple locations in a vector or matrix
  - calculate the norm of a vector
