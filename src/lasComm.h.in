@@ -1,9 +1,8 @@
 #ifndef LAS_COMM_H_
 #define LAS_COMM_H_
-#ifdef MPI_VERSION
+#define USE_MPI @USE_MPI@
+#if USE_MPI == 1
 #include <mpi.h>
 extern MPI_Comm LAS_COMM_WORLD;
-#else
-#define MPI_Comm int
 #endif
 #endif

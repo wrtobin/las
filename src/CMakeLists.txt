@@ -1,5 +1,4 @@
 set(las_install las.h
-                capi/las_capi.h
                 lasComm.h
                 lasCSR.h
                 lasCSR_impl.h
@@ -8,7 +7,7 @@ set(las_install las.h
                 lasSparse.h
                 lasSparse_impl.h)
 set(las_headers lasCSRBuilder.h) #non-public headers
-set(las_sources capi/las_capi.cc
+set(las_sources las.cc
                 lasComm.cc
                 lasCSR.cc
                 lasCSRBuilder.cc)
@@ -30,6 +29,14 @@ if(${BUILD_SPARSKIT})
   set(link_libs ${link_libs} sparskit)
 endif()
 
+find_package(MPI)
+if(MPI_FOUND)
+  set(USE_MPI 1)
+  include_directories(SYSTEM ${MPI_INCLUDE_DIRS})
+else()
+  set(USE_MPI 0)
+endif()
+configure_file(lasComm.h.in "${CMAKE_CURRENT_SOURCE_DIR}/lasComm.h" @ONLY)
 # look for petsc first since it might have some dependencies other libraries use (parmetis, zoltan, hdf5)
 #find_package(MPI) # should actually make sure we're compiling with mpi support/compilers
 find_package(PETSc)
@@ -67,8 +74,60 @@ set(las_headers ${las_headers} ${las_install} lasConfig.h)
 
 add_library(las ${las_sources} ${las_headers})
 target_compile_features(las PUBLIC cxx_std_11)
-set_target_properties(las PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+if(CUDA_FOUND)
+  set_target_properties(las PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+endif()
+if(MPI_COMPILE_FLAGS)
+  set_target_properties(las PROPERTIES COMPILE_FLAGS ${MPI_COMPILE_DEFINITIONS)
+endif()
+if(MPI_LINK_FLAGS)
+  set_target_properties(las PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS})
+endif()
 target_include_directories(las PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/las> ${include_dirs})
-target_link_libraries(las PUBLIC ${link_libs})
+target_link_libraries(las PUBLIC ${link_libs} ${MPI_LIBRARIES})
 
 install(TARGETS las LIBRARY DESTINATION lib ARCHIVE DESTINATION lib INCLUDES DESTINATION include/las)
+
+function(add_backend backend headers libraries)
+  message(STATUS "Adding CAPI backend ${backend}")
+  set(BACKEND ${backend})
+  to_include(headers backend_header_includes)
+  set(capi_header capi/las_capi_${backend}.h)
+  set(capi_source capi/las_capi_${backend}.cc)
+  configure_file(capi/las_capi.h ${capi_header})
+  to_include(capi_header capi_header_include)
+  configure_file(capi/las_capi.cc ${capi_source})
+  set(capi_lib las_capi_${backend})
+  add_library(${capi_lib}
+    ${CMAKE_CURRENT_BINARY_DIR}/capi/las_capi_${backend}.h
+    ${CMAKE_CURRENT_BINARY_DIR}/capi/las_capi_${backend}.cc
+    ${headers})
+  target_compile_features(${capi_lib} PUBLIC cxx_std_11)
+  target_include_directories(${capi_lib} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+    $<INSTALL_INTERFACE:include/las>)
+  target_link_libraries(${capi_lib} PUBLIC las ${libraries} ${MPI_LIBRARIES})
+  if(CUDA_FOUND)
+  set_target_properties(${capi_lib} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+endif()
+if(MPI_COMPILE_FLAGS)
+  set_target_properties(${capi_lib} PROPERTIES COMPILE_FLAGS ${MPI_COMPILE_DEFINITIONS)
+endif()
+if(MPI_LINK_FLAGS)
+  set_target_properties(${capi_lib} PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS})
+endif()
+  install(TARGETS ${capi_lib} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib INCLUDES DESTINATION include/las)
+  unset(backend_header_includes)
+  unset(BACKEND)
+endfunction()
+
+if(${BUILD_SPARSKIT})
+  add_backend(sparskit "${sparskit_api_headers}" sparskit)
+endif()
+if(CUDA_FOUND)
+  add_backend(cusparse "${cusparse_api_headers}" ${CUDA_LIBRARIES})
+endif()
+if(PETSC_FOUND)
+  add_backend(petsc "${petsc_api_headers}" ${PETSC_LIBRARIES})
+endif()

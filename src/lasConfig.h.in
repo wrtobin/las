@@ -1,4 +1,11 @@
 #ifndef LAS_CONFIG_H_
 #define LAS_CONFIG_H_
 @package_include_headers@
+namespace las
+{
+enum Backend
+{
+  @package_enum@
+};
+}
 #endif

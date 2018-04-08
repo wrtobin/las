@@ -28,55 +28,59 @@ namespace las
   {
     return reinterpret_cast<::Vec*>(v);
   }
-  inline void PetscOps::_zero(las::Mat * m)
+  inline void petsc::_zero(las::Mat * m)
   {
     MatZeroEntries(*getPetscMat(m));
   }
-  inline void PetscOps::_zero(las::Vec * v)
+  inline void petsc::_zero(las::Vec * v)
   {
     VecZeroEntries(*getPetscVec(v));
   }
-  inline void PetscOps::_assemble(las::Vec * v, int cnt, int * rws, scalar * vls)
+  inline void petsc::_zero(las::Mat * m, int rw)
+  {
+    MatZeroRows(*getPetscMat(m),1,&rw,0.0,PETSC_NULL,PETSC_NULL);
+  }
+  inline void petsc::_assemble(las::Vec * v, int cnt, int * rws, scalar * vls)
   {
     VecSetValues(*getPetscVec(v),cnt,rws,vls,ADD_VALUES);
   }
-  inline void PetscOps::_assemble(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
+  inline void petsc::_assemble(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
   {
     MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,ADD_VALUES);
   }
-  inline void PetscOps::_set(las::Vec * v, int cnt, int * rws, scalar * vls)
+  inline void petsc::_set(las::Vec * v, int cnt, int * rws, scalar * vls)
   {
     VecSetValues(*getPetscVec(v),cnt,rws,vls,INSERT_VALUES);
   }
-  inline void PetscOps::_set(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
+  inline void petsc::_set(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
   {
     MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,INSERT_VALUES);
   }
-  inline scalar PetscOps::_norm(las::Vec * v)
+  inline scalar petsc::_norm(las::Vec * v)
   {
     scalar n = 0.0;
     VecNorm(*getPetscVec(v),NORM_2,&n);
     return n;
   }
-  inline scalar PetscOps::_dot(las::Vec * v0, las::Vec * v1)
+  inline scalar petsc::_dot(las::Vec * v0, las::Vec * v1)
   {
     scalar d = 0.0;
     VecDot(*getPetscVec(v0),*getPetscVec(v1),&d);
     return d;
   }
-  inline void PetscOps::_axpy(scalar a, Vec * x, Vec * y)
+  inline void petsc::_axpy(scalar a, Vec * x, Vec * y)
   {
     VecAXPY(*getPetscVec(y),a,*getPetscVec(x));
   }
-  inline void PetscOps::_get(las::Vec * v, scalar *& vls)
+  inline void petsc::_get(las::Vec * v, scalar *& vls)
   {
     VecGetArray(*getPetscVec(v),&vls);
   }
-  inline void PetscOps::_restore(las::Vec * v, scalar *& vls)
+  inline void petsc::_restore(las::Vec * v, scalar *& vls)
   {
     VecRestoreArray(*getPetscVec(v),&vls);
   }
-  inline las::Mat * createPetscMatrix(unsigned l, unsigned g, unsigned bs = 1, Sparsity * sprs = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
+  inline las::Mat * createPetscMatrix(unsigned l, unsigned bs = 1, Sparsity * sprs = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
   {
     bool have_sparsity = sprs != nullptr;
     NNZ * nnz = have_sparsity ? reinterpret_cast<NNZ*>(sprs) : nullptr;
@@ -86,7 +90,7 @@ namespace las
     ::Mat * m = new ::Mat;
     MatCreate(cm,m);
     MatSetType(*m, mat_tps[is_par][blk]);
-    MatSetSizes(*m, l, l, g, g);
+    MatSetSizes(*m, l, l, PETSC_DETERMINE, PETSC_DETERMINE);
     MatSetBlockSize(*m, bs);
     if(have_sparsity)
     {
@@ -121,6 +125,10 @@ namespace las
       MatSetOption(*m,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);
     return reinterpret_cast<las::Mat*>(m);
   }
+  inline void destroyPetscMat(las::Mat * m)
+  {
+    MatDestroy(getPetscMat(m));
+  }
   inline las::Vec * createLHSVec(las::Mat * m)
   {
     ::Vec * v = new ::Vec;
@@ -133,19 +141,72 @@ namespace las
     MatCreateVecs(*getPetscMat(m),nullptr,v);
     return reinterpret_cast<las::Vec*>(v);
   }
-  inline las::Vec * createPetscVector(unsigned l, unsigned g, unsigned bs, MPI_Comm cm = LAS_COMM_WORLD)
+  inline las::Vec * createPetscVector(unsigned l, unsigned bs, MPI_Comm cm = LAS_COMM_WORLD)
   {
     ::Vec * v = new ::Vec;
-    VecCreateMPI(cm,l,g,v);
+    VecCreateMPI(cm,l,PETSC_DETERMINE,v);
     VecSetBlockSize(*v,bs);
     VecSetOption(*v,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);
     return reinterpret_cast<las::Vec*>(v);
   }
-  inline LasOps<PetscOps> * getPetscOps()
+  inline void destroyPetscVec(las::Vec * v)
   {
-    static PetscOps * ops = NULL;
+    VecDestroy(getPetscVec(v));
+  }
+  class petscMatBuilder : public LasCreateMat
+  {
+  public:
+    virtual Mat * create(unsigned lcl, unsigned bs, Sparsity * s, MPI_Comm cm)
+    {
+      return createPetscMatrix(lcl,bs,s,cm);
+    }
+    virtual void destroy(Mat * m)
+    {
+      destroyPetscMat(m);
+    }
+  };
+  class petscVecBuilder : public LasCreateVec
+  {
+  public:
+    virtual Vec * create(unsigned lcl, unsigned bs, MPI_Comm cm)
+    {
+      return createPetscVector(lcl,bs,cm);
+    }
+    virtual Vec * createRHS(Mat * m)
+    {
+      return createRHSVec(m);
+    }
+    virtual Vec * createLHS(Mat * m)
+    {
+      return createLHSVec(m);
+    }
+    virtual void destroy(Vec * v)
+    {
+      destroyPetscVec(v);
+    }
+  };
+  template <>
+  inline LasCreateMat * getMatBuilder<petsc>(int)
+  {
+    static petscMatBuilder * mb = nullptr;
+    if(mb == nullptr)
+      mb = new petscMatBuilder;
+    return mb;
+  }
+  template <>
+  inline LasCreateVec * getVecBuilder<petsc>(int)
+  {
+    static petscVecBuilder * vb = nullptr;
+    if(vb == nullptr)
+      vb = new petscVecBuilder;
+    return vb;
+  }
+  template <>
+  inline LasOps<petsc> * getLASOps()
+  {
+    static petsc * ops = NULL;
     if(ops == NULL)
-      ops = new PetscOps;
+      ops = new petsc;
     return ops;
   }
   class PetscLUSolve : public LasSolve
@@ -190,7 +251,7 @@ namespace las
   /*
     PetscErrorCode PetscIterate(SNES ,::Vec x,::Vec f,void * i)
     {
-    LasOps * ops = getPetscOps();
+    LasOps * ops = getpetsc();
     // x vector needs to be applied to simulation prior to assembling force vector...
     // typically we update our fields just after a solve, which gets us into position
     // for the next iteration
@@ -261,29 +322,6 @@ namespace las
   inline LasMultiply * createPetscMultiply()
   {
     return new PetscMultiply;
-  }
-  inline mat_builder getPetscMatBuilder()
-  {
-    return
-      [](unsigned lcl,
-         unsigned gbl,
-         unsigned bs,
-         Sparsity * sprs,
-         MPI_Comm cm)
-   {
-     return createPetscMatrix(lcl,gbl,bs,sprs,cm);
-   };
-  }
-  inline vec_builder getPetscVecBuilder()
-  {
-    return
-      [](unsigned lcl,
-         unsigned gbl,
-         unsigned bs,
-         MPI_Comm cm)
-    {
-      return createPetscVector(lcl,gbl,bs,cm);
-    };
   }
 }
 #endif

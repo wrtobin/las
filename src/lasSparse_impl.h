@@ -25,12 +25,9 @@ namespace las
     }
     scalar & operator()(int rr, int cc)
     {
-      int idx = -1;
-      if(rr < 0 || cc < 0)
-        idx = csr->getNumNonzero();
-      else
-        idx = (*csr)(rr,cc);
-      return vls[idx];
+      int idx[] = { (*csr)(rr,cc), csr->getNumNonzero() };
+      bool dmy = rr < 0 || cc < 0;
+      return vls[idx[dmy]];
     }
     CSR * getCSR()
     {
@@ -117,6 +114,13 @@ namespace las
   inline void csrOps::_zero(Vec * v)
   {
     getSimpleVec(v)->zero();
+  }
+  inline void csrOps::_zero(Mat * m, int rw)
+  {
+    csrMat * mat = getCSRMat(m);
+    int cols = mat->getCSR()->getNumEqs();
+    for(int ii = 0; ii < cols; ++ii)
+      (*mat)(rw,ii) = 0.0;
   }
   inline void csrOps::_assemble(Vec * v, int cnt, int * rws, scalar * vls)
   {

@@ -3,7 +3,7 @@
 #include "las.h"
 namespace las
 {
-  Mat * createCSRMatrix(Sparsity* csr);
+  Mat * createCSRMatrix(Sparsity * csr);
   void destroyCSRMatrix(Mat * m);
   Vec * createVector(unsigned n);
   void destroyVector(Vec * v);
@@ -14,6 +14,7 @@ namespace las
   public:
     void _zero(Mat * m);
     void _zero(Vec * v);
+    void _zero(Mat * m, int rw);
     void _assemble(Vec * v, int cnt, int * rws, scalar * vls);
     void _assemble(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls);
     void _set(Vec * v, int cnt, int * rws, scalar * vls);

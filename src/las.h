@@ -7,10 +7,6 @@ namespace las
   class Mat;
   class Vec;
   class Sparsity;
-  typedef Mat*(*mat_builder)(unsigned lcl, unsigned gbl, unsigned bs, Sparsity * s, MPI_Comm cm);
-  typedef Vec*(*vec_builder)(unsigned lcl, unsigned gbl, unsigned bs, MPI_Comm cm);
-  typedef void(*mat_destroyer)(Mat * m);
-  typedef void(*vec_destroyer)(Vec * v);
   template <class T>
   class LasOps
   {
@@ -22,6 +18,10 @@ namespace las
     void zero(Vec * v)
     {
       static_cast<T*>(this)->_zero(v);
+    }
+    void zero(Mat * v, int rw)
+    {
+      static_cast<T*>(this)->_zero(v,rw);
     }
     void assemble(Vec * v, int cnt, int * rws, scalar * vls)
     {
@@ -60,6 +60,26 @@ namespace las
       static_cast<T*>(this)->_restore(v,vls);
     }
   };
+  class LasCreateMat
+  {
+  public:
+    virtual Mat * create(unsigned lcl, unsigned bs, Sparsity * s, MPI_Comm cm) = 0;
+    virtual void destroy(Mat * m) = 0;
+  };
+  class LasCreateVec
+  {
+  public:
+    virtual Vec * create(unsigned lcl, unsigned bs, MPI_Comm cm) = 0;
+    virtual void destroy(Vec * v) = 0;
+    virtual Vec * createRHS(Mat * m);
+    virtual Vec * createLHS(Mat * m);
+  };
+  template <typename T>
+  LasOps<T> * getLASOps();
+  template <typename T>
+  LasCreateMat * getMatBuilder(int id);
+  template <typename T>
+  LasCreateVec * getVecBuilder(int id);
   class LasSolve
   {
   public:

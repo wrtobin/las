@@ -2,14 +2,16 @@
 #define LAS_SPARSKIT_H_
 #include "lasSparskitExterns.h"
 #include "lasSparse.h"
+#include <ostream>
 namespace las
 {
-  typedef csrOps skOps;
-  Mat * createSparskitMatrix(Sparsity * csr);
-  void destroySparskitMatrix(Mat * m);
-  Vec * createSparskitVector(unsigned n);
-  void destroySparskitVector(Vec * v);
-  LasOps<skOps> * initSparskitOps();
+  typedef csrOps sparskit;
+  template <>
+  LasCreateMat * getMatBuilder<sparskit>(int id);
+  template <>
+  LasCreateVec * getVecBuilder<sparskit>(int id);
+  template <>
+  LasOps<sparskit> * getLASOps<sparskit>();
   /**
    * @note Sparskit is a single-precision solver, so don't use this for anything nonlinear where you're
    *  trying to converge past 10e-8
@@ -20,8 +22,6 @@ namespace las
   void printSparskitMat(std::ostream &, Mat * m);
   double getSparskitMatValue(Mat *, int rr, int cc);
   void setSparskitMatValue(Mat *, int rr, int cc, double vl);
-  mat_builder getSparskitMatBuilder();
-  vec_builder getSparskitVecBuilder();
 }
 #include "lasSparskit_impl.h"
 #endif

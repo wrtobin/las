@@ -4,6 +4,7 @@
 #include "lasSparse_impl.h"
 #include "lasDebug.h"
 #include <cassert>
+#include <iostream>
 namespace las
 {
   typedef csrMat skMat;
@@ -34,27 +35,52 @@ namespace las
     // the matrix k must have a csr format identical to that used previously in a normal SparskitLU solve
     virtual void solve(Mat * k, Vec * u, Vec * f);
   };
-  inline Mat * createSparskitMatrix(Sparsity * csr)
+  class skMatBuilder : public LasCreateMat
   {
-    return createCSRMatrix(csr);
+  public:
+    virtual Mat * create(unsigned,unsigned,Sparsity * csr, MPI_Comm)
+    {
+      return createCSRMatrix(csr);
+    }
+    virtual void destroy(Mat * m)
+    {
+      destroyCSRMatrix(m);
+    }
+  };
+  class skVecBuilder : public LasCreateVec
+  {
+  public:
+    virtual Vec * create(unsigned lcl,unsigned,MPI_Comm)
+    {
+      return createVector(lcl);
+    }
+    virtual void destroy(Vec * v)
+    {
+      destroyVector(v);
+    }
+  };
+  template <>
+  inline LasCreateMat * getMatBuilder<sparskit>(int)
+  {
+    static skMatBuilder * mb = nullptr;
+    if(mb == nullptr)
+      mb = new skMatBuilder;
+    return mb;
   }
-  inline void destroySparskitMatrix(Mat * m)
+  template <>
+  inline LasCreateVec * getVecBuilder<sparskit>(int)
   {
-    destroyCSRMatrix(m);
+    static skVecBuilder * vb = nullptr;
+    if(vb == nullptr)
+      vb = new skVecBuilder;
+    return vb;
   }
-  inline Vec * createSparskitVector(unsigned n)
+  template <>
+  inline LasOps<sparskit> * getLASOps<sparskit>()
   {
-    return createVector(n);
-  }
-  inline void destroySparskitVector(Vec * v)
-  {
-    destroyVector(v);
-  }
-  inline LasOps<skOps> * initSparskitOps()
-  {
-    static skOps * ops = NULL;
-    if(ops == NULL)
-      ops = new skOps;
+    static sparskit * ops = nullptr;
+    if(ops == nullptr)
+      ops = new sparskit;
     return ops;
   }
   inline LasSolve * createSparskitLUSolve(SparskitBuffers * b)
@@ -147,29 +173,6 @@ namespace las
            bfrs->matrixBuffer(),
            bfrs->colsBuffer(),
            bfrs->rowsBuffer());
-  }
-  inline mat_builder getSparskitMatBuilder()
-  {
-    return
-      [](unsigned,
-         unsigned,
-         unsigned,
-         Sparsity * csr,
-         MPI_Comm)
-    {
-      return createSparskitMatrix(csr);
-    };
-  }
-  inline vec_builder getSparskitVecBuilder()
-  {
-    return
-      [](unsigned lcl,
-         unsigned,
-         unsigned,
-         MPI_Comm)
-    {
-      return createSparskitVector(lcl);
-    };
   }
 }
 #endif

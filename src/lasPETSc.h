@@ -3,24 +3,24 @@
 #include "las.h"
 namespace las
 {
-  class PetscOps;
+  class petsc;
   void initPETScLAS(int * argc, char ** argv[], MPI_Comm cm);
   void finalizePETScLAS();
-  Mat * createPetscMatrix(unsigned lcl, unsigned gbl, unsigned bs, Sparsity * sprs, MPI_Comm cm);
-  Vec * createPetscVector(unsigned lcl, unsigned gbl, unsigned bs, MPI_Comm cm);
-  Vec * createLHSVector(Mat * m);
-  Vec * createRHSVector(Mat * m);
-  void destroyPetscMatrix(Mat * m);
-  void destroyPetscVector(Vec * v);
-  LasOps<PetscOps> * getPetscOps();
+  template <>
+  LasCreateMat * getMatBuilder<petsc>(int id);
+  template <>
+  LasCreateVec * getVecBuilder<petsc>(int id);
+  template <>
+  LasOps<petsc> * getLASOps();
   LasSolve * createPetscLUSolve(MPI_Comm cm);
   LasSolve * createPetscQNSolve(void * a);
   LasMultiply * createPetscMultiply();
-  class PetscOps : public LasOps<PetscOps>
+  class petsc : public LasOps<petsc>
   {
   public:
     void _zero(las::Mat * m);
     void _zero(las::Vec * v);
+    void _zero(las::Mat * m, int rw);
     void _assemble(las::Vec * v, int cnt, int * rws, scalar * vls);
     void _assemble(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls);
     void _set(las::Vec * v, int cnt, int * rws, scalar * vls);
@@ -31,8 +31,6 @@ namespace las
     void _get(las::Vec * v, scalar *& vls);
     void _restore(las::Vec * v, scalar *& vls);
   };
-  mat_builder getPetscMatBuilder();
-  vec_builder getPetscVecBuidler();
 }
 #include "lasPETSc_impl.h"
 #endif

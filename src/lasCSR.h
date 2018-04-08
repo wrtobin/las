@@ -27,8 +27,8 @@ namespace las
     {
       int result = -1;
       int kk = 0;
-      for(kk = rws.at(rw); (kk < rws.at(rw+1)) && (cls.at(kk-1) < (cl+1)); kk++){}
-      if(cls.at(kk - 1) == (cl + 1))
+      for(kk = rws[rw]; (kk < rws[rw+1]) && (cls[kk-1] < (cl+1)); kk++){}
+      if(cls[kk - 1] == (cl + 1))
         result = kk - 1;
       else
         result = -1;
