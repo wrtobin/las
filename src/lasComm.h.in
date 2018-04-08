@@ -3,6 +3,8 @@
 #define USE_MPI @USE_MPI@
 #if USE_MPI == 1
 #include <mpi.h>
-extern MPI_Comm LAS_COMM_WORLD;
+#else
+typdef int MPI_Comm
 #endif
+extern MPI_Comm LAS_COMM_WORLD;
 #endif
