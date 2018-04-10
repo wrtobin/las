@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR) # version 3.8 adds cuda as a language, 3.9 has better VS integration
 project(las)
+set(LAS_MAJOR_VERSION 0)
+set(LAS_MINOR_VERSION 1)
+set(LAS_PATCH_VERSION 0)
+set(LAS_VERSION ${LAS_MAJOR_VERSION}.${LAS_MINOR_VERSION}.${LAS_PATCH_VERSION})
 enable_language(CXX)
 enable_language(C)
 # enable_language(CUDA) re-enable if we need to start compiling .cu kernels
@@ -16,7 +20,9 @@ if(BUILD_SHARED_LIBS)
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 endif()
 
-#todo : check scalar=double/complex
+set(ConfigPackageLocation lib/cmake/las)
+
+#todo : check scalar=double/complex and set flags
 
 # c++11 support now happens through target_compile_features() per-target
 # add C++ compiler flags
@@ -87,3 +93,4 @@ message(STATUS "Configuring las")
 add_subdirectory(src)
 message(STATUS "Configuring tests")
 add_subdirectory(test)
+

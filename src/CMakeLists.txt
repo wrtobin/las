@@ -69,7 +69,6 @@ if(PETSC_FOUND)
 endif()
 
 configure_file(lasConfig.h.in "${CMAKE_CURRENT_SOURCE_DIR}/lasConfig.h" @ONLY)
-
 set(las_headers ${las_headers} ${las_install} lasConfig.h)
 
 add_library(las ${las_sources} ${las_headers})
@@ -85,8 +84,8 @@ if(MPI_LINK_FLAGS)
 endif()
 target_include_directories(las PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/las> ${include_dirs})
 target_link_libraries(las PUBLIC ${link_libs} ${MPI_LIBRARIES})
-
-install(TARGETS las LIBRARY DESTINATION lib ARCHIVE DESTINATION lib INCLUDES DESTINATION include/las)
+install(TARGETS las EXPORT lasConfig LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT core INCLUDES DESTINATION include/las)
+set(LAS_COMPONENTS las)
 
 function(add_backend backend headers libraries)
   message(STATUS "Adding CAPI backend ${backend}")
@@ -117,7 +116,8 @@ endif()
 if(MPI_LINK_FLAGS)
   set_target_properties(${capi_lib} PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS})
 endif()
-  install(TARGETS ${capi_lib} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib INCLUDES DESTINATION include/las)
+  install(TARGETS ${capi_lib} EXPORT lasConfig LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT capi_${backend} INCLUDES DESTINATION include/las)
+  set(LAS_COMPONENTS "${LAS_COMPONENTS} ${capi_lib}")
   unset(backend_header_includes)
   unset(BACKEND)
 endfunction()
@@ -131,3 +131,10 @@ endif()
 if(PETSC_FOUND)
   add_backend(petsc "${petsc_api_headers}" ${PETSC_LIBRARIES})
 endif()
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/las/lasConfigVersion.cmake"
+  VERSION ${LAS_VERSION} COMPATIBILITY AnyNewerVersion)
+
+#configure_file(${PROJECT_SOURCE_DIR}/cmake/lasConfig.cmake "${CMAKE_CURRENT_BINARY_DIR}/las/lasConfig.cmake" @ONLY)
+install(EXPORT lasConfig DESTINATION lib/las)
