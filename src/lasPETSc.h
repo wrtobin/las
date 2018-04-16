@@ -12,9 +12,10 @@ namespace las
   LasCreateVec * getVecBuilder<petsc>(int id);
   template <>
   LasOps<petsc> * getLASOps();
-  LasSolve * createPetscLUSolve(MPI_Comm cm);
-  LasSolve * createPetscQNSolve(void * a);
-  LasMultiply * createPetscMultiply();
+  Solve * createPetscLUSolve(MPI_Comm cm);
+  Solve * createPetscQNSolve(void * a);
+  MatVecMult * createPetscMatVecMult();
+  MatMatMult * createPetscMatMatMult();
   class petsc : public LasOps<petsc>
   {
   public:

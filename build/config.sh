@@ -1,4 +1,6 @@
 PREFIX=$DEVROOT/install/las
+CUDA_INC_PATH=$DEVROOT/install/cuda/9.1/include \
+CUDA_PATH=$DEVROOT/install/cuda/9.1/ \
   cmake .. \
   -DCMAKE_C_COMPILER=`which mpicc` \
   -DCMAKE_CXX_COMPILER=`which mpicxx` \
@@ -11,4 +13,6 @@ PREFIX=$DEVROOT/install/las
   -DPETSC_DIR=$PETSC_DIR \
   -DPETSC_ARCH=$PETSC_ARCH \
   -DBUILD_SPARSKIT=ON
-  #-DCUDA_CUDART_LIBRARY= #find_cuda has issues with this sometimes
+
+#  -DCUDA_TOOLKIT_ROOT_DIR=$DEVROOT/install/cuda/9.1/bin \
+#  -DCUDA_CUDART_LIBRARY=$DEVROOT/install/cuda/9.1/lib64/libcudart_static.a

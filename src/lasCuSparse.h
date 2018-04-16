@@ -4,14 +4,16 @@
 #include "lasAlloc.h"
 namespace las
 {
-  typedef csrOps cuOps;
-  LasOps<cuOps> * getCuSparseOps();
+  typedef csrOps cusparse;
+  LasOps<cusparse> * getCuSparseOps();
   Mat * createCuMat(CSR * csr);
   void destroyCuMat(Mat * m);
   Vec * createCuVec(unsigned n);
   void destroyCuVec(Vec * v);
-  LasSolve * createCuSparseSolve();
-  LasMultiply * createCuSparseMultiply();
+  Solve * createCuSparseSolve();
+  MatVecMult * createCuMatVecMult();
+  MatMatMult * createCuCsrMatCsrMatMult();
+  MatMatMult * createCuCsrMatDMatMult();
 }
 #include "lasCuSparse_impl.h"
 #endif

@@ -17,7 +17,7 @@ namespace las
   {
     return reinterpret_cast<skVec*>(v);
   }
-  class SparskitLU : public LasSolve
+  class SparskitLU : public Solve
   {
   protected:
     SparskitBuffers * bfrs;
@@ -83,15 +83,15 @@ namespace las
       ops = new sparskit;
     return ops;
   }
-  inline LasSolve * createSparskitLUSolve(SparskitBuffers * b)
+  inline Solve * createSparskitLUSolve(SparskitBuffers * b)
   {
     return new SparskitLU(b);
   }
-  inline LasSolve * createSparskitQuickLUSolve(SparskitBuffers * b)
+  inline Solve * createSparskitQuickLUSolve(SparskitBuffers * b)
   {
     return new SparskitQuickLU(b);
   }
-  inline LasSolve * createSparskitQuickLUSolve(LasSolve * slv)
+  inline Solve * createSparskitQuickLUSolve(Solve * slv)
   {
     SparskitLU * skt_slv = reinterpret_cast<SparskitLU*>(slv);
     return new SparskitQuickLU(skt_slv);

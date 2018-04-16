@@ -1,8 +1,9 @@
 @backend_header_includes@
 @capi_header_include@
 #include "las.h"
-las::LasSolve * las_solver;
-las::LasMultiply * las_multiplier;
+las::Solve * las_solver;
+las::MatVecMult * las_mv_multiplier;
+las::MatMatMult * las_mm_multiplier;
 las::LasCreateMat * las_mat_factory;
 las::LasCreateVec * las_vec_factory;
 las_ops * las(init)(int * argc, char * argv[], MPI_Comm cm)
@@ -88,7 +89,11 @@ void las(solve)(las_mat * k, las_vec * u, las_vec * f)
 {
   las_solver->solve((las::Mat*)k,(las::Vec*)u,(las::Vec*)f);
 }
-void las(multiply)(las_mat * a, las_vec * x, las_vec * y)
+void las(mv_multiply)(las_mat * a, las_vec * x, las_vec * y)
 {
-  las_multiplier->exec((las::Mat*)a,(las::Vec*)x,(las::Vec*)y);
+  las_mv_multiplier->exec((las::Mat*)a,(las::Vec*)x,(las::Vec*)y);
+}
+void las(mm_multiply)(las_mat * a, las_mat * b, las_mat ** c)
+{
+  las_mm_multiplier->exec((las::Mat*)a,(las::Mat*)b,(las::Mat**)c);
 }

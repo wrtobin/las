@@ -5,6 +5,7 @@ set(las_install las.h
                 lasDebug.h
                 lasScalar.h
                 lasSparse.h
+                lasNNZ.h
                 lasSparse_impl.h)
 set(las_headers lasCSRBuilder.h) #non-public headers
 set(las_sources las.cc
@@ -51,7 +52,6 @@ if(CUDA_FOUND)
   set(las_install ${las_install} ${cusparse_api_headers} ${cusparse_impl_headers})
   set(link_libs ${link_libs} ${CUDA_LIBRARIES})
   set(include_dirs ${include_dirs} ${CUDA_INCLUDE_DIRS})
-  message(STATUS "CUDA include directories: ${CUDA_INCLUDE_DIRS}")
 endif()
 if(SCOREC_FOUND)
   set(las_install ${las_install} lasCSRCore.h)
@@ -71,20 +71,21 @@ endif()
 configure_file(lasConfig.h.in "${CMAKE_CURRENT_SOURCE_DIR}/lasConfig.h" @ONLY)
 set(las_headers ${las_headers} ${las_install} lasConfig.h)
 
-add_library(las ${las_sources} ${las_headers})
+add_library(las ${las_sources})
 target_compile_features(las PUBLIC cxx_std_11)
 if(CUDA_FOUND)
   set_target_properties(las PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 endif()
 if(MPI_COMPILE_FLAGS)
-  set_target_properties(las PROPERTIES COMPILE_FLAGS ${MPI_COMPILE_DEFINITIONS)
+  set_target_properties(las PROPERTIES COMPILE_FLAGS ${MPI_COMPILE_DEFINITIONS})
 endif()
 if(MPI_LINK_FLAGS)
   set_target_properties(las PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS})
 endif()
-target_include_directories(las PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/las> ${include_dirs})
+set_target_properties(las PROPERTIES PUBLIC_HEADER "${las_headers}")
+target_include_directories(las PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include> ${include_dirs})
 target_link_libraries(las PUBLIC ${link_libs} ${MPI_LIBRARIES})
-install(TARGETS las EXPORT lasConfig LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT core INCLUDES DESTINATION include/las)
+install(TARGETS las EXPORT lasConfig LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT core PUBLIC_HEADER DESTINATION include)
 set(LAS_COMPONENTS las)
 
 function(add_backend backend headers libraries)
@@ -105,7 +106,7 @@ function(add_backend backend headers libraries)
   target_include_directories(${capi_lib} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-    $<INSTALL_INTERFACE:include/las>)
+    $<INSTALL_INTERFACE:include>)
   target_link_libraries(${capi_lib} PUBLIC las ${libraries} ${MPI_LIBRARIES})
   if(CUDA_FOUND)
   set_target_properties(${capi_lib} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -116,7 +117,8 @@ endif()
 if(MPI_LINK_FLAGS)
   set_target_properties(${capi_lib} PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS})
 endif()
-  install(TARGETS ${capi_lib} EXPORT lasConfig LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT capi_${backend} INCLUDES DESTINATION include/las)
+  set_target_properties(${capi_lib} PROPERTIES PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/${capi_header};${las_headers}" )
+  install(TARGETS ${capi_lib} EXPORT lasConfig LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT capi_${backend} PUBLIC_HEADER DESTINATION include)
   set(LAS_COMPONENTS "${LAS_COMPONENTS} ${capi_lib}")
   unset(backend_header_includes)
   unset(BACKEND)

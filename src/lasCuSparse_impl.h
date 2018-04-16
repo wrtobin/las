@@ -6,7 +6,7 @@
 #include "las.h"
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
-#include <cuSparse.h>
+#include <cusparse.h>
 namespace las
 {
   // opaque types only used for template specialization
@@ -25,9 +25,9 @@ namespace las
   template <>
   inline void dealloc<cuHost>(void ** dat)
   {
-    DBG(cudaEffor_t status =)
+    DBG(cudaError_t status =)
       cudaFreeHost(dat);
-    assert(statis == cudaSuccess && "Deallocation of cuda pinned host memmory failed.");
+    assert(status == cudaSuccess && "Deallocation of cuda pinned host memmory failed.");
   }
   template <>
   inline void alloc<cuDev>(void ** dat, size_t sz)
@@ -41,9 +41,9 @@ namespace las
   {
     DBG(cudaError_t status =)
       cudaFree(dat);
-    assert(status == cudaSucess && "Deallocation of cuda device memory failed.");
+    assert(status == cudaSuccess && "Deallocation of cuda device memory failed.");
   }
-  inline Mat * createCuMat(CSR * csr)
+  inline Mat * createCuMat(Sparsity * csr)
   {
     return createCSRMatrix(csr);
   }
@@ -59,16 +59,18 @@ namespace las
   {
     destroyVector(v);
   }
-  inline LasOps<cuOps> * getCuSparseOps()
+  template <>
+  inline LasOps<cusparse> * getLASOps()
   {
-    static cuOps * ops = nullptr;
+    static cusparse * ops = nullptr;
     if (ops == nullptr)
-      ops = new cuOps;
+      ops = new cusparse;
     return ops;
   }
   // currently this only works for square matrices
-  class cuMultiply : LasMultiply
+  class cuMatVecMult : public MatVecMult
   {
+  public:
     void exec(Mat * a, Vec * x, Vec * y)
     {
       cuMat * A = getCSRMat(a);
@@ -97,11 +99,11 @@ namespace las
       CSR * csr = A->getCSR();
       int neq = csr->getNumEqs();
       int nnz = csr->getNumNonzero();
-      alloc<cuDefAlloc>((void**)&dev_csrRows, sizeof(int) * (neq + 1));
-      alloc<cuDefAlloc>((void**)&dev_csrCols, sizeof(int) * (nnz));
-      alloc<cuDefAlloc>((void**)&dev_csrVals, sizeof(scalar) * (nnz));
-      alloc<cuDefAlloc>((void**)&dev_x, sizeof(scalar) * (nnz));
-      alloc<cuDefAlloc>((void**)&dev_y, sizeof(scalar) * (nnz));
+      alloc<cuDev>((void**)&dev_csrRows, sizeof(int) * (neq + 1));
+      alloc<cuDev>((void**)&dev_csrCols, sizeof(int) * (nnz));
+      alloc<cuDev>((void**)&dev_csrVals, sizeof(scalar) * (nnz));
+      alloc<cuDev>((void**)&dev_x, sizeof(scalar) * (nnz));
+      alloc<cuDev>((void**)&dev_y, sizeof(scalar) * (nnz));
       cudaMemcpy(dev_csrRows, csr->getRows(), sizeof(int) * (neq + 1), cudaMemcpyHostToDevice);
       cudaMemcpy(dev_csrCols, csr->getCols(), sizeof(int) * (nnz), cudaMemcpyHostToDevice);
       cudaMemcpy(dev_csrVals, A->getVals(), sizeof(scalar) * (nnz), cudaMemcpyHostToDevice);
@@ -126,15 +128,157 @@ namespace las
         &zero, //b
         dev_y);
       cudaMemcpy(&(*Y)[0], dev_y, sizeof(scalar) * (nnz), cudaMemcpyDeviceToHost);
-      dealloc<cuDefAlloc>(dev_csrRows);
-      dealloc<cuDefAlloc>(dev_csrCols);
-      dealloc<cuDefAlloc>(dev_csrVals);
-      dealloc<cuDefAlloc>(dev_x);
-      dealloc<cuDefAlloc>(dev_y);
+      dealloc<cuDev>((void**)&dev_csrRows);
+      dealloc<cuDev>((void**)&dev_csrCols);
+      dealloc<cuDev>((void**)&dev_csrVals);
+      dealloc<cuDev>((void**)&dev_x);
+      dealloc<cuDev>((void**)&dev_y);
       cublasDestroy(cublas);
       cusparseDestroy(cusparse);
       cudaStreamDestroy(stream);
       cusparseDestroyMatDescr(mat_desc);
+    }
+  };
+  inline MatVecMult * createCuMatVecMult()
+  {
+    return new cuMatVecMult;
+  }
+  class cu_csrMat_csrMatMult : public MatMatMult
+  {
+  public:
+    void exec(Mat * a, Mat * b, Mat ** c)
+    {
+      cuMat * A = getCSRMat(a); // m x n
+      cuMat * B = getCSRMat(b); // n x k
+      CSR * a_csr = A->getCSR();
+      CSR * b_csr = B->getCSR();
+      int m = a_csr->getNumEqs();
+      int n = m;
+      int k = b_csr->getNumEqs();
+      assert(m == k);
+      cublasHandle_t  cublas = nullptr;
+      cusparseHandle_t cusparse = nullptr;
+      cudaStream_t stream = nullptr;
+      cusparseMatDescr_t a_desc = nullptr;
+      cusparseMatDescr_t b_desc = nullptr;
+      cusparseMatDescr_t c_desc = nullptr;
+      // create cublas/cusparse handles, bind a stream to them
+      cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking);
+      cublasCreate(&cublas);
+      cublasSetStream(cublas, stream);
+      cusparseCreate(&cusparse);
+      cusparseSetStream(cusparse, stream);
+      // create A matrix description and allocate device memory
+      cusparseCreateMatDescr(&a_desc);
+      cusparseSetMatIndexBase(a_desc, CUSPARSE_INDEX_BASE_ONE);
+      cusparseSetMatType(a_desc, CUSPARSE_MATRIX_TYPE_GENERAL); // also _SYMMETRIC, _HERMITIAN, _TRIANGULAR
+      int * dev_acsrRows = nullptr;
+      int * dev_acsrCols = nullptr;
+      scalar * dev_acsrVals = nullptr;
+      int annz = a_csr->getNumNonzero();
+      alloc<cuDev>((void**)&dev_acsrRows, sizeof(int) * (m + 1));
+      alloc<cuDev>((void**)&dev_acsrCols, sizeof(int) * (annz));
+      alloc<cuDev>((void**)&dev_acsrVals, sizeof(scalar) * (annz));
+      cusparseCreateMatDescr(&b_desc);
+      cusparseSetMatIndexBase(b_desc, CUSPARSE_INDEX_BASE_ONE);
+      cusparseSetMatType(b_desc, CUSPARSE_MATRIX_TYPE_GENERAL);
+      // create B matrix description and allocate device memory
+      int * dev_bcsrRows = nullptr;
+      int * dev_bcsrCols = nullptr;
+      scalar * dev_bcsrVals = nullptr;
+      int bnnz = b_csr->getNumNonzero();
+      alloc<cuDev>((void**)&dev_bcsrRows, sizeof(int) * (k + 1));
+      alloc<cuDev>((void**)&dev_bcsrCols, sizeof(int) * (bnnz));
+      alloc<cuDev>((void**)&dev_bcsrVals, sizeof(scalar) * (bnnz));
+      // move A and B to the device
+      cudaMemcpy(dev_acsrRows, a_csr->getRows(), sizeof(int) * (m + 1), cudaMemcpyHostToDevice);
+      cudaMemcpy(dev_acsrCols, a_csr->getCols(), sizeof(int) * (annz), cudaMemcpyHostToDevice);
+      cudaMemcpy(dev_acsrVals, A->getVals(), sizeof(scalar) * (annz), cudaMemcpyHostToDevice);
+      cudaMemcpy(dev_bcsrRows, b_csr->getRows(), sizeof(int) * (k + 1), cudaMemcpyHostToDevice);
+      cudaMemcpy(dev_bcsrCols, b_csr->getCols(), sizeof(int) * (bnnz), cudaMemcpyHostToDevice);
+      cudaMemcpy(dev_bcsrVals, B->getVals(), sizeof(scalar) * (bnnz), cudaMemcpyHostToDevice);
+      // generate the c structure
+      cusparseCreateMatDescr(&c_desc);
+      cusparseSetMatIndexBase(c_desc, CUSPARSE_INDEX_BASE_ONE);
+      cusparseSetMatType(c_desc, CUSPARSE_MATRIX_TYPE_GENERAL);
+      int * dev_ccsrRows = nullptr;
+      int * dev_ccsrCols = nullptr;
+      scalar * dev_ccsrVals = nullptr;
+      int cnnz = 0;
+      int * nnzptr = &cnnz;
+      int c_base = 0;
+      // calculate cnnz
+      alloc<cuDev>((void**)&dev_ccsrRows, sizeof(int) * (m + 1));
+      cusparseXcsrgemmNnz(cusparse,
+                          CUSPARSE_OPERATION_NON_TRANSPOSE,
+                          CUSPARSE_OPERATION_NON_TRANSPOSE,
+                          m,n,k,
+                          a_desc, annz, dev_acsrRows, dev_acsrCols,
+                          b_desc, bnnz, dev_bcsrRows, dev_bcsrCols,
+                          c_desc, dev_ccsrRows, nnzptr);
+      if(nnzptr != NULL)
+        cnnz = *nnzptr;
+      else
+      {
+        cudaMemcpy(&cnnz, dev_ccsrRows+m, sizeof(int), cudaMemcpyDeviceToHost);
+        cudaMemcpy(&c_base, dev_ccsrRows, sizeof(int), cudaMemcpyDeviceToHost);
+        cnnz -= c_base;
+      }
+      alloc<cuDev>((void**)&dev_ccsrCols, sizeof(int) * cnnz);
+      alloc<cuDev>((void**)&dev_ccsrVals, sizeof(scalar) * cnnz);
+      cusparseDcsrgemm(cusparse,
+                       CUSPARSE_OPERATION_NON_TRANSPOSE,
+                       CUSPARSE_OPERATION_NON_TRANSPOSE,
+                       m,n,k,
+                       a_desc, annz, dev_acsrVals, dev_acsrRows, dev_acsrCols,
+                       b_desc, bnnz, dev_bcsrVals, dev_bcsrRows, dev_bcsrCols,
+                       c_desc, dev_ccsrVals, dev_ccsrRows, dev_ccsrCols);
+      int * hst_ccsrRows = nullptr;
+      int * hst_ccsrCols = nullptr;
+      scalar * hst_ccsrVals = nullptr;
+      alloc<cuHost>((void**)&hst_ccsrRows, sizeof(int) * (m + 1));
+      alloc<cuHost>((void**)&hst_ccsrCols, sizeof(int) * cnnz);
+      alloc<cuHost>((void**)&hst_ccsrVals, sizeof(int) * cnnz);
+      cudaMemcpy(&hst_ccsrRows, dev_ccsrRows, sizeof(int) * (m + 1), cudaMemcpyDeviceToHost);
+      cudaMemcpy(&hst_ccsrCols, dev_ccsrCols, sizeof(int) * cnnz, cudaMemcpyDeviceToHost);
+      cudaMemcpy(&hst_ccsrVals, dev_ccsrVals, sizeof(scalar) * cnnz, cudaMemcpyDeviceToHost);
+      CSR * ccsr = new CSR(m,cnnz,hst_ccsrRows,hst_ccsrCols);
+      *c = createCSRMatrix((Sparsity*)ccsr);
+      dealloc<cuDev>((void**)&dev_acsrRows);
+      dealloc<cuDev>((void**)&dev_acsrCols);
+      dealloc<cuDev>((void**)&dev_acsrVals);
+      dealloc<cuDev>((void**)&dev_bcsrRows);
+      dealloc<cuDev>((void**)&dev_bcsrCols);
+      dealloc<cuDev>((void**)&dev_bcsrVals);
+      dealloc<cuDev>((void**)&dev_ccsrRows);
+      dealloc<cuDev>((void**)&dev_ccsrCols);
+      dealloc<cuDev>((void**)&dev_ccsrVals);
+      cusparseDestroyMatDescr(a_desc);
+      cusparseDestroyMatDescr(b_desc);
+      cusparseDestroyMatDescr(c_desc);
+      cudaStreamDestroy(stream);
+      cusparseDestroy(cusparse);
+      cublasDestroy(cublas);
+    }
+  };
+  inline MatMatMult * createCuCsrMatMatMult()
+  {
+    return new cu_csrMat_csrMatMult;
+  }
+  // only works with square matrices, since CSR only supports square matrices
+  class cu_csrMat_dMatMult : public MatMatMult
+  {
+  public:
+    void exec(Mat * a, Mat * b, Mat ** c)
+    {
+      cuMat * A = getCSRMat(a); // m x n
+      cuMat * B = getCSRMat(b); // n x k
+      CSR * a_csr = A->getCSR();
+      CSR * b_csr = B->getCSR();
+      int m = a_csr->getNumEqs();
+      int k = b_csr->getNumEqs();
+      assert(m == k);
+      (void)c;
     }
   };
 }

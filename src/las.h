@@ -80,15 +80,20 @@ namespace las
   LasCreateMat * getMatBuilder(int id);
   template <typename T>
   LasCreateVec * getVecBuilder(int id);
-  class LasSolve
+  class Solve
   {
   public:
     virtual void solve(Mat * k, Vec * u, Vec * f) = 0;
   };
-  class LasMultiply
+  class MatVecMult
   {
   public:
     virtual void exec(Mat * x, Vec * a, Vec * b) = 0;
+  };
+  class MatMatMult
+  {
+  public:
+    virtual void exec(Mat * a, Mat * b, Mat ** c) = 0;
   };
 }
 #endif

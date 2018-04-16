@@ -209,13 +209,14 @@ namespace las
       ops = new petsc;
     return ops;
   }
-  class PetscLUSolve : public LasSolve
+  class PetscLUSolve : public Solve
   {
     MPI_Comm cm;
     ::KSP ksp;
   public:
     PetscLUSolve(MPI_Comm c = LAS_COMM_WORLD)
-      : cm(c)
+      : Solve()
+      , cm(c)
     {
       KSPCreate(cm,&ksp);
     }
@@ -244,7 +245,7 @@ namespace las
       KSPSolve(ksp,*pf,*pu);
     }
   };
-  inline LasSolve * createPetscLUSolve(MPI_Comm cm = LAS_COMM_WORLD)
+  inline Solve * createPetscLUSolve(MPI_Comm cm = LAS_COMM_WORLD)
   {
     return new PetscLUSolve(cm);
   }
@@ -280,7 +281,7 @@ namespace las
     return(0);
     }
   */
-  class PetscQNSolve : public LasSolve
+  class PetscQNSolve : public Solve
   {
   private:
     //void * args;
@@ -305,12 +306,13 @@ namespace las
       SNESDestroy(&snes);
     }
   };
-  inline LasSolve * createPetscQNSolve(void * a)
+  inline Solve * createPetscQNSolve(void * a)
   {
     return new PetscQNSolve(a);
   }
-  class PetscMultiply : public LasMultiply
+  class PetscMatVecMult : public MatVecMult
   {
+  public:
     void exec(Mat * x, Vec * a, Vec * b)
     {
       ::Mat * px = getPetscMat(x);
@@ -319,9 +321,41 @@ namespace las
       MatMult(*px,*pa,*pb);
     }
   };
-  inline LasMultiply * createPetscMultiply()
+  inline MatVecMult * createPetscMatVecMult()
   {
-    return new PetscMultiply;
+    return new PetscMatVecMult;
+  }
+  class PetscMatMatMult : public MatMatMult
+  {
+  private:
+    ::Mat * pa_p;
+    ::Mat * pb_p;
+    ::Mat * pc_p;
+  public:
+    PetscMatMatMult()
+      : pa_p(PETSC_NULL)
+      , pb_p(PETSC_NULL)
+      , pc_p(PETSC_NULL)
+    { }
+    void exec(Mat * a, Mat * b, Mat ** c)
+    {
+      ::Mat * pa = getPetscMat(a);
+      ::Mat * pb = getPetscMat(b);
+      ::Mat ** pc = reinterpret_cast<::Mat**>(c);
+      if(pa != pa_p || pb != pb_p || *pc != pc_p) // may want to switch to actual equality instead of pointer equality...?
+      {
+        ::MatMatMult(*pa,*pb,MAT_INITIAL_MATRIX,PETSC_DEFAULT,*pc);
+        pa_p = pa;
+        pb_p = pb;
+        pc_p = *pc;
+      }
+      else
+        ::MatMatMult(*pa,*pb,MAT_REUSE_MATRIX,PETSC_DEFAULT,*pc);
+    }
+  };
+  inline MatMatMult * createPetscMatMatMult()
+  {
+    return new PetscMatMatMult;
   }
 }
 #endif
