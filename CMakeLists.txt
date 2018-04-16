@@ -94,3 +94,9 @@ add_subdirectory(src)
 message(STATUS "Configuring tests")
 add_subdirectory(test)
 
+find_package(PETSc) # influences the scorec library dependencies
+find_package(Scorec)
+if(SCOREC_FOUND)
+  message(STATUS "Configure SCOREC/core integration")
+  add_subdirectory(core)
+endif()
