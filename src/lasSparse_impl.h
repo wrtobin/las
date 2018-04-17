@@ -118,7 +118,7 @@ namespace las
   inline void csrOps::_zero(Mat * m, int rw)
   {
     csrMat * mat = getCSRMat(m);
-    int cols = mat->getCSR()->getNumEqs();
+    int cols = mat->getCSR()->getNumCols();
     for(int ii = 0; ii < cols; ++ii)
       (*mat)(rw,ii) = 0.0;
   }

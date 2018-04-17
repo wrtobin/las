@@ -14,14 +14,16 @@ namespace las
   class CSR
   {
   private:
-    int neq;
+    int nr;
+    int nc;
     int nnz;
     std::vector<int> rws;
     std::vector<int> cls;
     CSR();
   public:
-    CSR(int ne, int nnz, int * rs, int * cs);
-    int getNumEqs() const { return neq; }
+    CSR(int r, int c, int nnz, int * rs, int * cs);
+    int getNumRows() const { return nr; }
+    int getNumCols() const { return nc; }
     int getNumNonzero() const { return nnz; }
     int operator()(int rw, int cl) const
     {

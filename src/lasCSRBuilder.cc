@@ -53,7 +53,7 @@ namespace las
         if(mat[ii*cls + jj] != 0.0 && addNonzero(&rwb[0],ii,&clb[0],jj,rws))
           nnz++;
     rwb[rws+1] = nnz;
-    CSR * rslt = new CSR(rws,nnz,&rwb[0],&clb[0]);
+    CSR * rslt = new CSR(rws,cls,nnz,&rwb[0],&clb[0]);
     return reinterpret_cast<Sparsity*>(rslt);
   }
 }

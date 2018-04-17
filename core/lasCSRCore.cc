@@ -49,7 +49,7 @@ namespace las
     }
     CSR * finalize()
     {
-      return new CSR(ndofs,nnz,&rws[0],&cls[0]);
+      return new CSR(ndofs,ndofs,nnz,&rws[0],&cls[0]);
     }
   };
   CSR * createCSR(apf::Numbering * num, int ndofs)

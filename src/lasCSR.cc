@@ -5,7 +5,7 @@ namespace las
 {
   void constructFullMatrix(CSR * csr, scalar * sprs_mat, scalar * fll_mat)
   {
-    int neq = csr->getNumEqs();
+    int neq = csr->getNumRows();
     memset(&fll_mat[0],0,neq*neq*sizeof(scalar));
     int lc = -1;
     for(int ii = 0; ii < neq; ii++)

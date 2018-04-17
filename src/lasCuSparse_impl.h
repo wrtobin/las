@@ -97,7 +97,7 @@ namespace las
       scalar * dev_x = nullptr;
       scalar * dev_y = nullptr;
       CSR * csr = A->getCSR();
-      int neq = csr->getNumEqs();
+      int neq = csr->getNumRows();
       int nnz = csr->getNumNonzero();
       alloc<cuDev>((void**)&dev_csrRows, sizeof(int) * (neq + 1));
       alloc<cuDev>((void**)&dev_csrCols, sizeof(int) * (nnz));
@@ -152,9 +152,9 @@ namespace las
       cuMat * B = getCSRMat(b); // n x k
       CSR * a_csr = A->getCSR();
       CSR * b_csr = B->getCSR();
-      int m = a_csr->getNumEqs();
-      int n = m;
-      int k = b_csr->getNumEqs();
+      int m = a_csr->getNumRows();
+      int n = a_csr->getNumCols();
+      int k = b_csr->getNumCols();
       assert(m == k);
       cublasHandle_t  cublas = nullptr;
       cusparseHandle_t cusparse = nullptr;
@@ -242,7 +242,7 @@ namespace las
       cudaMemcpy(&hst_ccsrRows, dev_ccsrRows, sizeof(int) * (m + 1), cudaMemcpyDeviceToHost);
       cudaMemcpy(&hst_ccsrCols, dev_ccsrCols, sizeof(int) * cnnz, cudaMemcpyDeviceToHost);
       cudaMemcpy(&hst_ccsrVals, dev_ccsrVals, sizeof(scalar) * cnnz, cudaMemcpyDeviceToHost);
-      CSR * ccsr = new CSR(m,cnnz,hst_ccsrRows,hst_ccsrCols);
+      CSR * ccsr = new CSR(m,k,cnnz,hst_ccsrRows,hst_ccsrCols);
       *c = createCSRMatrix((Sparsity*)ccsr);
       dealloc<cuDev>((void**)&dev_acsrRows);
       dealloc<cuDev>((void**)&dev_acsrCols);
@@ -275,8 +275,8 @@ namespace las
       cuMat * B = getCSRMat(b); // n x k
       CSR * a_csr = A->getCSR();
       CSR * b_csr = B->getCSR();
-      int m = a_csr->getNumEqs();
-      int k = b_csr->getNumEqs();
+      int m = a_csr->getNumRows();
+      int k = b_csr->getNumCols();
       assert(m == k);
       (void)c;
     }

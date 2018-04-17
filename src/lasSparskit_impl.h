@@ -99,7 +99,7 @@ namespace las
   inline void printSparskitMat(std::ostream & o, Mat * mi)
   {
     skMat * m = getSparskitMatrix(mi);
-    int ndofs = m->getCSR()->getNumEqs();
+    int ndofs = m->getCSR()->getNumRows();
     for(int rr = 0; rr < ndofs; ++rr)
     {
       for(int cc = 0; cc < ndofs; ++cc)
@@ -112,7 +112,7 @@ namespace las
   inline double getSparskitMatValue(Mat * k, int rr, int cc)
   {
     skMat * m = getSparskitMatrix(k);
-    DBG(int ndofs = m->getCSR()->getNumEqs());
+    DBG(int ndofs = m->getCSR()->getNumRows());
     assert(rr < ndofs && rr >= 0);
     assert(cc < ndofs && cc >= 0);
     return (*m)(rr,cc);
@@ -120,7 +120,7 @@ namespace las
   inline void setSparskitMatValue(Mat * k, int rr, int cc, double vl)
   {
     skMat * m = getSparskitMatrix(k);
-    DBG(int ndofs = m->getCSR()->getNumEqs());
+    DBG(int ndofs = m->getCSR()->getNumRows());
     assert(rr < ndofs && rr >= 0);
     assert(cc < ndofs && cc >= 0);
     (*m)(rr,cc) = vl;
@@ -135,7 +135,7 @@ namespace las
     CSR * csr = mat->getCSR();
     int bfr_lng = bfrs->matrixLength();
     int ierr = 0;
-    int ndofs = csr->getNumEqs();
+    int ndofs = csr->getNumRows();
     ilut_(&ndofs,
           &(*mat)(0,0),
           csr->getCols(),
@@ -166,7 +166,7 @@ namespace las
     skMat * mat = getSparskitMatrix(k);
     skVec * uv = getSparskitVector(u);
     skVec * fv = getSparskitVector(f);
-    int ndofs = mat->getCSR()->getNumEqs();
+    int ndofs = mat->getCSR()->getNumRows();
     lusol_(&ndofs,
            &(*fv)[0],
            &(*uv)[0],
