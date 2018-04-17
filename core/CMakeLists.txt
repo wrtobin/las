@@ -18,8 +18,8 @@ endif()
 
 find_package(PETSc)
 if(PETSC_FOUND)
-  set(las_core_petsc_headers lasPETScCore.h
-                             lasPETScCore_impl.h)
+  set(las_core_petsc_headers lasCorePETSc.h
+                             lasCorePETSc_impl.h)
   set(las_core_petsc_sources )
   set(las_core_headers ${las_core_headers} ${las_core_petsc_headers})
   set(las_core_sources ${las_core_sources} ${las_core_petsc_sources})
