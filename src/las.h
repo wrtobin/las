@@ -57,10 +57,18 @@ namespace las
     {
       static_cast<T*>(this)->_set(m,cntr,rws,cntc,cls,vls);
     }
+    /**
+     * @note vls is allocated inside this function, the user
+     *       is responsible for destroying the array after use
+     */
     void get(Vec * v, int cntr, int * rws, scalar ** vls)
     {
       static_cast<T*>(this)->_get(v,cntr,rws,vls);
     }
+    /**
+     * @note vls is allocated inside this function, the user
+     *       is responsible for destroying the array after use
+     */
     void get(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar ** vls)
     {
       static_cast<T*>(this)->_get(m,cntr,rws,cntc,cls,vls);
