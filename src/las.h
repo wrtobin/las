@@ -63,12 +63,14 @@ namespace las
   class LasCreateMat
   {
   public:
+    virtual ~LasCreateMat() {};
     virtual Mat * create(unsigned lcl, unsigned bs, Sparsity * s, MPI_Comm cm) = 0;
     virtual void destroy(Mat * m) = 0;
   };
   class LasCreateVec
   {
   public:
+    virtual ~LasCreateVec() {};
     virtual Vec * create(unsigned lcl, unsigned bs, MPI_Comm cm) = 0;
     virtual void destroy(Vec * v) = 0;
     virtual Vec * createRHS(Mat * m);

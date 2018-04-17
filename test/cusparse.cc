@@ -8,7 +8,7 @@ int main(int,char*[])
                    0.0 , 0.0 , 1.0 };
   las::Sparsity * eye_csr = las::csrFromFull(&eye[0], 3, 3);
   assert(eye_csr);
-  las::Mat * mat_csr = las::createCuMat(eye_csr);
+  las::Mat * mat_csr = las::getMatBuilder<las::cusparse>(0)->create(0,1,eye_csr,MPI_COMM_NULL);
   assert(mat_csr);
   auto * ops = las::getLASOps<las::cusparse>();
   assert(ops);

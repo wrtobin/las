@@ -4,8 +4,8 @@
 #include "lasAlloc.h"
 namespace las
 {
-  typedef csrOps cusparse;
-  LasOps<cusparse> * getCuSparseOps();
+  typedef sparse cusparse;
+  LasOps<cusparse> * getLASOps();
   template <>
   LasCreateMat * getMatBuilder<cusparse>(int id);
   template <>

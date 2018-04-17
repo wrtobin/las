@@ -10,7 +10,7 @@ int main(int, char*[])
   assert(eye_csr);
   las::Mat * mat_csr = las::createCSRMatrix(eye_csr);
   assert(mat_csr);
-  las::LasOps<las::csrOps> * ops = las::initCSROps();
+  auto * ops = las::getLASOps<las::sparse>();
   assert(ops);
   int rwcls[] = {0, 1, 2};
   double vl = 1.0;

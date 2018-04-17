@@ -5,7 +5,7 @@
 #include <ostream>
 namespace las
 {
-  typedef csrOps sparskit;
+  typedef sparse sparskit;
   template <>
   LasCreateMat * getMatBuilder<sparskit>(int id);
   template <>

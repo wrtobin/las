@@ -35,54 +35,6 @@ namespace las
     // the matrix k must have a csr format identical to that used previously in a normal SparskitLU solve
     virtual void solve(Mat * k, Vec * u, Vec * f);
   };
-  class skMatBuilder : public LasCreateMat
-  {
-  public:
-    virtual Mat * create(unsigned,unsigned,Sparsity * csr, MPI_Comm)
-    {
-      return createCSRMatrix(csr);
-    }
-    virtual void destroy(Mat * m)
-    {
-      destroyCSRMatrix(m);
-    }
-  };
-  class skVecBuilder : public LasCreateVec
-  {
-  public:
-    virtual Vec * create(unsigned lcl,unsigned,MPI_Comm)
-    {
-      return createVector(lcl);
-    }
-    virtual void destroy(Vec * v)
-    {
-      destroyVector(v);
-    }
-  };
-  template <>
-  inline LasCreateMat * getMatBuilder<sparskit>(int)
-  {
-    static skMatBuilder * mb = nullptr;
-    if(mb == nullptr)
-      mb = new skMatBuilder;
-    return mb;
-  }
-  template <>
-  inline LasCreateVec * getVecBuilder<sparskit>(int)
-  {
-    static skVecBuilder * vb = nullptr;
-    if(vb == nullptr)
-      vb = new skVecBuilder;
-    return vb;
-  }
-  template <>
-  inline LasOps<sparskit> * getLASOps<sparskit>()
-  {
-    static sparskit * ops = nullptr;
-    if(ops == nullptr)
-      ops = new sparskit;
-    return ops;
-  }
   inline Solve * createSparskitLUSolve(SparskitBuffers * b)
   {
     return new SparskitLU(b);
