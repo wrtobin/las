@@ -30,17 +30,19 @@ void las(destroy_vec)(las_ops * las, las_vec * v);
 void las(zero_mat)(las_ops * las, las_mat * m);
 void las(assemble_mat)(las_ops * las, las_mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls);
 void las(set_mat)(las_ops * las, las_mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls);
+void las(get_mat)(las_ops * las, las_mat * m, int cntr, int * rws, int cntc, int * cls, scalar ** vls);
 void las(zero_row)(las_ops * las, las_mat * m, int rw);
 /* vec operations */
 void las(zero_vec)(las_ops * las, las_vec * v);
 void las(assemble_vec)(las_ops * las, las_vec * v, int cnt, int * rws, scalar * vls);
 void las(set_vec)(las_ops * las, las_vec * v, int cnt, int * rws, scalar * vls);
+void las(get_vec)(las_ops * las, las_vec * v, int cnt, int * rws, scalar ** vls);
 /* arithmetic ops */
 scalar las(norm)(las_ops * las, las_vec * v);
 scalar las(dot)(las_ops * las, las_vec * a, las_vec * b);
 void las(axpy)(las_ops * las, scalar a, las_vec * x, las_vec * y);
 /* memory ops */
-void las(get_vec)(las_ops * las, las_vec * v, scalar ** vls);
+void las(get_vec_arr)(las_ops * las, las_vec * v, scalar ** vls);
 void las(restore_vec)(las_ops * las, las_vec * v, scalar ** vls);
 /* linear system multiplication and solves */
 void las(solve)(las_mat * k, las_vec * u, las_vec * f);

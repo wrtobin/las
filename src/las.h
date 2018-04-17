@@ -4,9 +4,27 @@
 #include "lasScalar.h"
 namespace las
 {
+  /**
+   * The opaque type for all matrices in LAS.
+   */
   class Mat;
+  /**
+   * The opaque type for all vectors in LAS.
+   */
   class Vec;
+  /**
+   * The opaque type for all nonzero sparsity patterns in LAS.
+   */
   class Sparsity;
+  /**
+   * The primary interface for low-level LAS operations.
+   *  Each operation in this interface can be inlined
+   *  when using optimized compilation, as the backend is
+   *  known at compile-time (CRTP + inlining). That makes
+   *  these operations as efficient as possible with the
+   *  given backend, so they are safe to use in tight
+   *  loops.
+   */
   template <class T>
   class LasOps
   {
@@ -39,6 +57,14 @@ namespace las
     {
       static_cast<T*>(this)->_set(m,cntr,rws,cntc,cls,vls);
     }
+    void get(Vec * v, int cntr, int * rws, scalar ** vls)
+    {
+      static_cast<T*>(this)->_get(v,cntr,rws,vls);
+    }
+    void get(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar ** vls)
+    {
+      static_cast<T*>(this)->_get(m,cntr,rws,cntc,cls,vls);
+    }
     scalar norm(Vec * v)
     {
       return static_cast<T*>(this)->_norm(v);
@@ -60,6 +86,12 @@ namespace las
       static_cast<T*>(this)->_restore(v,vls);
     }
   };
+  /**
+   * A generic matrix factory interface. Subclasses of
+   *  this may or may not actually use all the arguments
+   *  supplied, but some backends (like PETSc) use all of
+   *  them.
+   */
   class LasCreateMat
   {
   public:
@@ -67,6 +99,11 @@ namespace las
     virtual Mat * create(unsigned lcl, unsigned bs, Sparsity * s, MPI_Comm cm) = 0;
     virtual void destroy(Mat * m) = 0;
   };
+  /**
+   * A generic vector factory interface. Subclasses of
+   *  this may or may not actually use all the arguments
+   *  supplied, and may not implement createRHS or createLHS.
+   */
   class LasCreateVec
   {
   public:
@@ -76,22 +113,56 @@ namespace las
     virtual Vec * createRHS(Mat * m);
     virtual Vec * createLHS(Mat * m);
   };
+  /**
+   * Get the operations object for a specific backend.
+   *  Each backend defines an opaque class identifying
+   *  the backend, this function is specialized
+   *  by each backend using the identifying backend class.
+   */
   template <typename T>
   LasOps<T> * getLASOps();
+  /**
+   * Get a factory to create a matrix, this
+   *  function is also specialized for each backend,
+   *  the id parameter currently doesn't do anything,
+   *  but is there in case a backend may have many
+   *  different matrix creation factories/algorithms.
+   */
   template <typename T>
   LasCreateMat * getMatBuilder(int id);
+  /**
+   * Same as getMatBuilder but for vectors.
+   */
   template <typename T>
   LasCreateVec * getVecBuilder(int id);
+  /**
+   * Interface for solving a linear system.
+   * @todo Retrieve backend-specific solvers using
+   *       backend id classes to do template
+   *       specialization, as above.
+   */
   class Solve
   {
   public:
     virtual void solve(Mat * k, Vec * u, Vec * f) = 0;
   };
+  /**
+   * Interface for Matrix-Vector multiplication
+   * @todo Retrieve backend-specific solvers using
+   *       backend id classes to do template
+   *       specialization, as above.
+   */
   class MatVecMult
   {
   public:
     virtual void exec(Mat * x, Vec * a, Vec * b) = 0;
   };
+  /**
+   * Interface for Matrix-Matrix multiplication
+   * @todo Retrieve backend-specific solvers using
+   *       backend id classes to do template
+   *       specialization, as above.
+   */
   class MatMatMult
   {
   public:

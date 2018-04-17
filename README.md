@@ -9,6 +9,7 @@ The operations currently exposed through the (simple) API are:
  - zero all nonzeros in rows in a matrix
  - assemble (add) values to multiple locations in a vector or matrix
  - set values at multiple locations in a vector or matrix
+ - get values from multiple locations in a vector or matrix
  - calculate the norm of a vector
  - calculate the dot product of two vectors
  - a general axpy procedure (y = a*x + y) for vectors x and y and scalar a

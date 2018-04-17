@@ -28,58 +28,72 @@ namespace las
   {
     return reinterpret_cast<::Vec*>(v);
   }
-  inline void petsc::_zero(las::Mat * m)
+  class petsc : public LasOps<petsc>
   {
-    MatZeroEntries(*getPetscMat(m));
-  }
-  inline void petsc::_zero(las::Vec * v)
-  {
-    VecZeroEntries(*getPetscVec(v));
-  }
-  inline void petsc::_zero(las::Mat * m, int rw)
-  {
-    MatZeroRows(*getPetscMat(m),1,&rw,0.0,PETSC_NULL,PETSC_NULL);
-  }
-  inline void petsc::_assemble(las::Vec * v, int cnt, int * rws, scalar * vls)
-  {
-    VecSetValues(*getPetscVec(v),cnt,rws,vls,ADD_VALUES);
-  }
-  inline void petsc::_assemble(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
-  {
-    MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,ADD_VALUES);
-  }
-  inline void petsc::_set(las::Vec * v, int cnt, int * rws, scalar * vls)
-  {
-    VecSetValues(*getPetscVec(v),cnt,rws,vls,INSERT_VALUES);
-  }
-  inline void petsc::_set(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
-  {
-    MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,INSERT_VALUES);
-  }
-  inline scalar petsc::_norm(las::Vec * v)
-  {
-    scalar n = 0.0;
-    VecNorm(*getPetscVec(v),NORM_2,&n);
-    return n;
-  }
-  inline scalar petsc::_dot(las::Vec * v0, las::Vec * v1)
-  {
-    scalar d = 0.0;
-    VecDot(*getPetscVec(v0),*getPetscVec(v1),&d);
-    return d;
-  }
-  inline void petsc::_axpy(scalar a, Vec * x, Vec * y)
-  {
-    VecAXPY(*getPetscVec(y),a,*getPetscVec(x));
-  }
-  inline void petsc::_get(las::Vec * v, scalar *& vls)
-  {
-    VecGetArray(*getPetscVec(v),&vls);
-  }
-  inline void petsc::_restore(las::Vec * v, scalar *& vls)
-  {
-    VecRestoreArray(*getPetscVec(v),&vls);
-  }
+  public:
+    void _zero(las::Mat * m)
+    {
+      MatZeroEntries(*getPetscMat(m));
+    }
+    void _zero(las::Vec * v)
+    {
+      VecZeroEntries(*getPetscVec(v));
+    }
+    void _zero(las::Mat * m, int rw)
+    {
+      MatZeroRows(*getPetscMat(m),1,&rw,0.0,PETSC_NULL,PETSC_NULL);
+    }
+    void _assemble(las::Vec * v, int cnt, int * rws, scalar * vls)
+    {
+      VecSetValues(*getPetscVec(v),cnt,rws,vls,ADD_VALUES);
+    }
+    void _assemble(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
+    {
+      MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,ADD_VALUES);
+    }
+    void _set(las::Vec * v, int cnt, int * rws, scalar * vls)
+    {
+      VecSetValues(*getPetscVec(v),cnt,rws,vls,INSERT_VALUES);
+    }
+    void _set(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
+    {
+      MatSetValues(*getPetscMat(m),cntr,rws,cntc,cls,vls,INSERT_VALUES);
+    }
+    void _get(las::Vec * v, int cntr, int * rws, scalar ** vls)
+    {
+      *vls = new scalar[cntr]();
+      VecGetValues(*getPetscVec(v),cntr,rws,*vls);
+    }
+    void _get(las::Mat * m, int cntr, int * rws, int cntc, int * cls, scalar ** vls)
+    {
+      *vls = new scalar[cntr*cntc]();
+      MatGetValues(*getPetscMat(m),cntr,rws,cntc,cls,*vls);
+    }
+    scalar _norm(las::Vec * v)
+    {
+      scalar n = 0.0;
+      VecNorm(*getPetscVec(v),NORM_2,&n);
+      return n;
+    }
+    scalar _dot(las::Vec * v0, las::Vec * v1)
+    {
+      scalar d = 0.0;
+      VecDot(*getPetscVec(v0),*getPetscVec(v1),&d);
+      return d;
+    }
+    void _axpy(scalar a, Vec * x, Vec * y)
+    {
+      VecAXPY(*getPetscVec(y),a,*getPetscVec(x));
+    }
+    void _get(las::Vec * v, scalar *& vls)
+    {
+      VecGetArray(*getPetscVec(v),&vls);
+    }
+    void _restore(las::Vec * v, scalar *& vls)
+    {
+      VecRestoreArray(*getPetscVec(v),&vls);
+    }
+  };
   inline las::Mat * createPetscMatrix(unsigned l, unsigned bs = 1, Sparsity * sprs = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
   {
     bool have_sparsity = sprs != nullptr;

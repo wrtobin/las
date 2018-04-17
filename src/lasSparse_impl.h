@@ -204,6 +204,21 @@ namespace las
         for(int jj = 0; jj < cntc; ++jj)
           (*mat)(rws[ii],cls[jj]) = vls[ii * cntc + jj];
     }
+    void _get(Vec * v, int cntr, int * rws, scalar ** vls)
+    {
+      simpleVec * vec = getSimpleVec(v);
+      *vls = new scalar[cntr]();
+      for(int ii = 0; ii < cntr; ++ii)
+        (*vls)[ii] = (*vec)[rws[ii]];
+    }
+    void _get(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar ** vls)
+    {
+      csrMat * mat = getCSRMat(m);
+      *vls = new scalar[cntr*cntc]();
+      for(int ii = 0; ii < cntr; ++ii)
+        for(int jj = 0; jj < cntc; ++jj)
+          (*vls)[ii*cntc+jj] = (*mat)(rws[ii],cls[ii]);
+    }
     scalar _norm(Vec * v)
     {
       simpleVec * vec = getSimpleVec(v);

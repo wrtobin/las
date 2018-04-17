@@ -49,6 +49,10 @@ void las(set_mat)(las_ops * las, las_mat * m, int cntr, int * rws, int cntc, int
 {
   ((las::LasOps<las::BACKEND>*)las)->assemble((las::Mat*)m,cntr,rws,cntc,cls,vls);
 }
+void las(get_mat)(las_ops * las, las_mat * m, int cntr, int * rws, int cntc, int * cls, scalar ** vls)
+{
+  ((las::LasOps<las::BACKEND>*)las)->get((las::Mat*)m,cntr,rws,cntc,cls,vls);
+}
 void las(zero_row)(las_ops * las, las_mat * m, int rw)
 {
   ((las::LasOps<las::BACKEND>*)las)->zero((las::Mat*)m,rw);
@@ -65,6 +69,10 @@ void las(set_vec)(las_ops * las, las_vec * v, int cnt, int * rws, scalar * vls)
 {
   ((las::LasOps<las::BACKEND>*)las)->set((las::Vec*)v,cnt,rws,vls);
 }
+void las(get_vec)(las_ops * las, las_vec * v, int cnt, int * rws, scalar ** vls)
+{
+  ((las::LasOps<las::BACKEND>*)las)->get((las::Vec*)v,cnt,rws,vls);
+}
 scalar las(norm)(las_ops * las, las_vec * v)
 {
   return ((las::LasOps<las::BACKEND>*)las)->norm((las::Vec*)v);
@@ -77,7 +85,7 @@ void las(axpy)(las_ops * las, scalar a, las_vec * x, las_vec * y)
 {
   ((las::LasOps<las::BACKEND>*)las)->axpy(a,(las::Vec*)x,(las::Vec*)y);
 }
-void las(get_vec)(las_ops * las, las_vec * v, scalar ** vls)
+void las(get_vec_arr)(las_ops * las, las_vec * v, scalar ** vls)
 {
   ((las::LasOps<las::BACKEND>*)las)->get((las::Vec*)v,*vls);
 }
