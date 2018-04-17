@@ -6,10 +6,10 @@ namespace las
 {
   typedef csrOps cusparse;
   LasOps<cusparse> * getCuSparseOps();
-  Mat * createCuMat(CSR * csr);
-  void destroyCuMat(Mat * m);
-  Vec * createCuVec(unsigned n);
-  void destroyCuVec(Vec * v);
+  template <>
+  LasCreateMat * getMatBuilder<cusparse>(int id);
+  template <>
+  LasCreateVec * getVecBuilder<cusparse>(int id);
   Solve * createCuSparseSolve();
   MatVecMult * createCuMatVecMult();
   MatMatMult * createCuCsrMatCsrMatMult();

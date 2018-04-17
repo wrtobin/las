@@ -67,6 +67,59 @@ namespace las
       ops = new cusparse;
     return ops;
   }
+  class cusparseMatBuilder : public LasCreateMat
+  {
+  public:
+    virtual Mat * create(unsigned, unsigned, Sparsity * s, MPI_Comm)
+    {
+      return createCuMat(s);
+    }
+    virtual void destroy(Mat * m)
+    {
+      destroyCuMat(m);
+    }
+  };
+  template <>
+  inline LasCreateMat * getMatBuilder<cusparse>(int)
+  {
+    static cusparseMatBuilder * mb = nullptr;
+    if(mb == nullptr)
+      mb = new cusparseMatBuilder;
+    return mb;
+  }
+  class cusparseVecBuilder : public LasCreateVec
+  {
+    virtual Vec * create(unsigned lcl, unsigned, MPI_Comm)
+    {
+      return createCuVec(lcl);
+    }
+    virtual void destroy(Vec * v)
+    {
+      destroyCuVec(v);
+    }
+    virtual Vec * createLHS(Mat * m)
+    {
+      cuMat * cm = getCSRMat(m);
+      CSR * csr = cm->getCSR();
+      int cols = csr->getNumCols();
+      return create(cols,1,MPI_COMM_SELF);
+    }
+    virtual Vec * createRHS(Mat * m)
+    {
+      cuMat * cm = getCSRMat(m);
+      CSR * csr = cm->getCSR();
+      int rows = csr->getNumRows();
+      return create(rows,1,MPI_COMM_SELF);
+    }
+  };
+  template <>
+  inline LasCreateVec * getVecBuilder<cusparse>(int)
+  {
+    static cusparseVecBuilder * vb = nullptr;
+    if(vb == nullptr)
+      vb = new cusparseVecBuilder;
+    return vb;
+  }
   // currently this only works for square matrices
   class cuMatVecMult : public MatVecMult
   {
