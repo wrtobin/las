@@ -1,4 +1,5 @@
 set(las_install las.h
+                lasAlloc.h
                 lasComm.h
                 lasCSR.h
                 lasCSR_impl.h
