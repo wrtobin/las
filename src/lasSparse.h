@@ -10,6 +10,8 @@ namespace las
   LasCreateVec * getVecBuilder<sparse>(int);
   template <>
   LasOps<sparse> * getLASOps();
+  MatVecMult * getSparseMatVecMult();
+  MatMatMult * getSparseMatMatMult();
 }
 #include "lasSparse_impl.h"
 #endif

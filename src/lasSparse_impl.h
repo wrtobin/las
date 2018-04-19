@@ -9,15 +9,15 @@ namespace las
 {
   class csrMat
   {
-    scalar * vls;
+    scalar * vls; // nnz +2 (dumy write, 0.0 read)
     CSR * csr;
   public:
     csrMat(CSR * c)
       : vls(nullptr)
       , csr(c)
     {
-      alloc<Malloc>((void**)&vls,sizeof(scalar) * (c->getNumNonzero() + 1));
-      memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero()+1));
+      alloc<Malloc>((void**)&vls,sizeof(scalar) * (c->getNumNonzero() + 2));
+      memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero() + 2));
     }
     ~csrMat()
     {
@@ -25,8 +25,8 @@ namespace las
     }
     scalar & operator()(int rr, int cc)
     {
-      int idx[] = { (*csr)(rr,cc), csr->getNumNonzero() };
-      bool dmy = rr < 0 || cc < 0;
+      int idx[] = { (*csr)(rr,cc), csr->getNumNonzero(), csr->getNumNonzero()+1 };
+      int dmy = (rr < 0 || cc < 0) ? 1 : idx[0] < 0 ? 2 : 0;
       return vls[idx[dmy]];
     }
     CSR * getCSR()
@@ -40,7 +40,7 @@ namespace las
     // too coupled to the implementation to leave external
     void zero()
     {
-      memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero()+1));
+      memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero() + 2));
     }
   };
   class simpleVec
@@ -114,7 +114,7 @@ namespace las
     }
   };
   template <>
-  LasCreateMat * getMatBuilder<sparse>(int)
+  inline LasCreateMat * getMatBuilder<sparse>(int)
   {
     static csrMatBuilder * mb = nullptr;
     if(mb == nullptr)
@@ -149,7 +149,7 @@ namespace las
     }
   };
   template <>
-  LasCreateVec * getVecBuilder<sparse>(int)
+  inline LasCreateVec * getVecBuilder<sparse>(int)
   {
     static csrVecBuilder * vb = nullptr;
     if(vb == nullptr)
@@ -217,7 +217,7 @@ namespace las
       *vls = new scalar[cntr*cntc]();
       for(int ii = 0; ii < cntr; ++ii)
         for(int jj = 0; jj < cntc; ++jj)
-          (*vls)[ii*cntc+jj] = (*mat)(rws[ii],cls[ii]);
+          (*vls)[ii*cntc+jj] = (*mat)(rws[ii],cls[jj]);
     }
     scalar _norm(Vec * v)
     {
