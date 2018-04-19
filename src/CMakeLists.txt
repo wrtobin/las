@@ -12,7 +12,8 @@ set(las_headers lasCSRBuilder.h) #non-public headers
 set(las_sources las.cc
                 lasComm.cc
                 lasCSR.cc
-                lasCSRBuilder.cc)
+                lasCSRBuilder.cc
+                lasSparse.cc)
 
 function(to_include header_list include_string)
   foreach(header IN LISTS ${header_list})
