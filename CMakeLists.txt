@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR) # version 3.8 adds cuda as a lan
 project(las)
 set(LAS_MAJOR_VERSION 0)
 set(LAS_MINOR_VERSION 1)
-set(LAS_PATCH_VERSION 7)
+set(LAS_PATCH_VERSION 8)
 set(LAS_VERSION ${LAS_MAJOR_VERSION}.${LAS_MINOR_VERSION}.${LAS_PATCH_VERSION})
 enable_language(CXX)
 enable_language(C)
@@ -16,7 +16,7 @@ message(STATUS "Configuring to build on: ${HOST}")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".so")
-if(BUILD_SHARED_LIBS)
+if(${BUILD_SHARED_LIBS})
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 endif()
 
@@ -88,6 +88,11 @@ add_subdirectory(sparskit)
 endif()
 
 find_package(CUDA)
+
+if(WITH_KOKKOS)
+
+  set(KOKKOS_FOUND TRUE)
+endif()
 
 message(STATUS "Configuring las")
 add_subdirectory(src)
