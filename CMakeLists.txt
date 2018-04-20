@@ -16,7 +16,7 @@ message(STATUS "Configuring to build on: ${HOST}")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".so")
-if(BUILD_SHARED_LIBS)
+if(${BUILD_SHARED_LIBS})
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 endif()
 
@@ -88,6 +88,11 @@ add_subdirectory(sparskit)
 endif()
 
 find_package(CUDA)
+
+if(WITH_KOKKOS)
+
+  set(KOKKOS_FOUND TRUE)
+endif()
 
 message(STATUS "Configuring las")
 add_subdirectory(src)
