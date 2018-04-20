@@ -21,6 +21,18 @@ namespace las
     std::vector<int> cls;
     CSR();
   public:
+    /**
+     * @param r The number of rows in the sparse matrix
+     * @param c The number of cols in the sparse matrix
+     * @param nnz The number of nonzeros in the sparse matrix
+     * @param rs An array of length r+1 containing the row offsets into cs
+     * @param cs An array of length nnz containing the column ids for each nonzero in the matrix
+     * @note See the lasCSRBuilder.h file for a basic interface to build these array from the
+     *       set of (row,col) values of all nonzeros in a matrix.
+     * @note The rs and cs arrays should use 1-indexing for fortran interoperability, if the
+     *       first rs offset is zero, it is assumed all values in rs and cs are 0-indexed and
+     *       they are converted to use 1-indexing (in a debug build this generates a warning).
+     */
     CSR(int r, int c, int nnz, int * rs, int * cs);
     int getNumRows() const { return nr; }
     int getNumCols() const { return nc; }
