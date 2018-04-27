@@ -89,34 +89,30 @@ int main(int argc, char * argv[])
 #if defined(TEST_LASOPS)
   las::lasOps<las::petsc> * las_ops = las::getLasOps<las::petsc>();
   las::Mat * las_K = reinterpret_cast<las::Mat*>(K);
+#elif defined(TEST_CVIRT)
+  cops * petsc_cops = createPetscCops();
 #elif defined(TEST_VIRTUAL)
   ops * petsc_ops = createPetscOps();
 #endif
   MatZeroEntries(K); // collective on petsc_comm_world
   unsigned long long span[2] = {0,0};
   span[0] = rdtsc();
+  while((ent = msh->iterate(it)))
+  {
+    apf::getElementNumbers(num,ent,nums);
 #if defined(TEST_RAW)
-  while((ent = msh->iterate(it)))
-  {
-    apf::getElementNumbers(num,ent,nums);
     MatSetValues(K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0],ADD_VALUES);
-  }
-  msh->end(it);
 #elif defined(TEST_LASOPS)
-  while((ent = msh->iterate(it)))
-  {
-    apf::getElementNumbers(num,ent,nums);
     las_ops->assemble(las_K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
-  }
-  msh->end(it);
+#elif defined(TEST_CALL)
+    add(m,nds_per_lmt,&nums[0],&nds_per_lmt,&nums[0],&ke[0]);
+#elif defined(TEST_CVIRT)
+    (*cops->add)(m,nds_per_lmt,&nums[0],&nds_per_lmt,&nums[0],&ke[0]);
 #elif defined(TEST_VIRTUAL)
-  while((ent = msh->iterate(it)))
-  {
-    apf::getElementNumbers(num,ent,nums);
     petsc_ops->add(las_K,nds_pet_lmt,&nums[0],nds_pet_lmt,&nums[0],&ke[0]);
-  }
-  msh->end(it);
 #endif
+    msh->end(it);
+  }
   span[1] = rdtsc();
   MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);
@@ -125,6 +121,10 @@ int main(int argc, char * argv[])
   std::string fnm("raw_results");
 #elif defined(TEST_LASOPS)
   std::string fnm("las_results");
+#elif defined(TEST_CALL)
+  std::string fnm("call_results");
+#elif defined(TEST_CVIRT)
+  std::string fnm("cvirt_results");
 #elif defined(TEST_VIRTUAL)
   std::string fnm("virtual_results");
 #else
