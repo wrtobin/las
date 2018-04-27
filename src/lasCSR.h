@@ -52,6 +52,7 @@ namespace las
     int * getRows() { return &rws[0]; }
     int * getCols() { return &cls[0]; }
   };
+  Sparsity * csrFromArray(int rws, int cls, int nnz, int * row_arr, int * col_arr);
   /**
    * Construct a CSR sparse matrix structure from a full matrix buffer
    * @param mat Pointer to array of rws x cls scalars containing the full matrix

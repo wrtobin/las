@@ -20,5 +20,9 @@ namespace las
         cls[cl]++;
     }
   }
+  inline Sparsity * csrFromArray(int rws, int cls, int nnz, int * row_arr, int * col_arr)
+  {
+    return reinterpret_cast<Sparsity*>(new CSR(rws,cls,nnz,row_arr,col_arr));
+  }
 }
 #endif
