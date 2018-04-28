@@ -1,10 +1,11 @@
 #ifndef LAS_SPARSE_IMPL_H_
 #define LAS_SPARSE_IMPL_H_
+#include "lasAlloc.h"
+#include "lasCSR.h"
+#include "lasInline.h"
 #include <cassert>
 #include <cmath>
 #include <cstring> //memset
-#include "lasAlloc.h"
-#include "lasCSR.h"
 namespace las
 {
   class csrMat
@@ -76,27 +77,27 @@ namespace las
       memset(&vls[0],0,sizeof(scalar)*(cnt+1));
     }
   };
-  inline csrMat * getCSRMat(Mat * m)
+  LAS_INLINE csrMat * getCSRMat(Mat * m)
   {
     return reinterpret_cast<csrMat*>(m);
   }
-  inline simpleVec * getSimpleVec(Vec * v)
+  LAS_INLINE simpleVec * getSimpleVec(Vec * v)
   {
     return reinterpret_cast<simpleVec*>(v);
   }
-  inline Mat * createCSRMatrix(Sparsity * csr)
+  LAS_INLINE Mat * createCSRMatrix(Sparsity * csr)
   {
     return reinterpret_cast<Mat*>(new csrMat(reinterpret_cast<CSR*>(csr)));
   }
-  inline void destroyCSRMatrix(Mat * m)
+  LAS_INLINE void destroyCSRMatrix(Mat * m)
   {
     delete getCSRMat(m);
   }
-  inline Vec * createVector(unsigned n)
+  LAS_INLINE Vec * createVector(unsigned n)
   {
     return reinterpret_cast<Vec*>(new simpleVec(n));
   }
-  inline void destroyVector(Vec * v)
+  LAS_INLINE void destroyVector(Vec * v)
   {
     delete getSimpleVec(v);
   }
@@ -114,7 +115,7 @@ namespace las
     }
   };
   template <>
-  inline LasCreateMat * getMatBuilder<sparse>(int)
+  LAS_INLINE LasCreateMat * getMatBuilder<sparse>(int)
   {
     static csrMatBuilder * mb = nullptr;
     if(mb == nullptr)
@@ -149,7 +150,7 @@ namespace las
     }
   };
   template <>
-  inline LasCreateVec * getVecBuilder<sparse>(int)
+  LAS_INLINE LasCreateVec * getVecBuilder<sparse>(int)
   {
     static csrVecBuilder * vb = nullptr;
     if(vb == nullptr)
@@ -258,7 +259,7 @@ namespace las
     { }
   };
   template <>
-  inline LasOps<sparse> * getLASOps()
+  LAS_INLINE LasOps<sparse> * getLASOps()
   {
     static sparse * ops = nullptr;
     if(ops == nullptr)

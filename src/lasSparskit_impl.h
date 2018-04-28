@@ -3,17 +3,18 @@
 #include "lasSparskitExterns.h"
 #include "lasSparse_impl.h"
 #include "lasDebug.h"
+#include "lasInline.h"
 #include <cassert>
 #include <iostream>
 namespace las
 {
   typedef csrMat skMat;
   typedef simpleVec skVec;
-  inline skMat * getSparskitMatrix(Mat * m)
+  LAS_INLINE skMat * getSparskitMatrix(Mat * m)
   {
     return reinterpret_cast<skMat*>(m);
   }
-  inline skVec * getSparskitVector(Vec * v)
+  LAS_INLINE skVec * getSparskitVector(Vec * v)
   {
     return reinterpret_cast<skVec*>(v);
   }
@@ -35,20 +36,20 @@ namespace las
     // the matrix k must have a csr format identical to that used previously in a normal SparskitLU solve
     virtual void solve(Mat * k, Vec * u, Vec * f);
   };
-  inline Solve * createSparskitLUSolve(SparskitBuffers * b)
+  LAS_INLINE Solve * createSparskitLUSolve(SparskitBuffers * b)
   {
     return new SparskitLU(b);
   }
-  inline Solve * createSparskitQuickLUSolve(SparskitBuffers * b)
+  LAS_INLINE Solve * createSparskitQuickLUSolve(SparskitBuffers * b)
   {
     return new SparskitQuickLU(b);
   }
-  inline Solve * createSparskitQuickLUSolve(Solve * slv)
+  LAS_INLINE Solve * createSparskitQuickLUSolve(Solve * slv)
   {
     SparskitLU * skt_slv = reinterpret_cast<SparskitLU*>(slv);
     return new SparskitQuickLU(skt_slv);
   }
-  inline void printSparskitMat(std::ostream & o, Mat * mi)
+  LAS_INLINE void printSparskitMat(std::ostream & o, Mat * mi)
   {
     skMat * m = getSparskitMatrix(mi);
     int ndofs = m->getCSR()->getNumRows();
@@ -61,7 +62,7 @@ namespace las
       o << '\b' << std::endl;
     }
   }
-  inline double getSparskitMatValue(Mat * k, int rr, int cc)
+  LAS_INLINE double getSparskitMatValue(Mat * k, int rr, int cc)
   {
     skMat * m = getSparskitMatrix(k);
     DBG(int ndofs = m->getCSR()->getNumRows());
@@ -69,7 +70,7 @@ namespace las
     assert(cc < ndofs && cc >= 0);
     return (*m)(rr,cc);
   }
-  inline void setSparskitMatValue(Mat * k, int rr, int cc, double vl)
+  LAS_INLINE void setSparskitMatValue(Mat * k, int rr, int cc, double vl)
   {
     skMat * m = getSparskitMatrix(k);
     DBG(int ndofs = m->getCSR()->getNumRows());
@@ -77,7 +78,7 @@ namespace las
     assert(cc < ndofs && cc >= 0);
     (*m)(rr,cc) = vl;
   }
-  inline void SparskitLU::solve(Mat * k, Vec * u, Vec * f)
+  LAS_INLINE void SparskitLU::solve(Mat * k, Vec * u, Vec * f)
   {
     bfrs->zero();
     double tol = 1e-6;
@@ -113,7 +114,7 @@ namespace las
            bfrs->colsBuffer(),
            bfrs->rowsBuffer());
   }
-  inline void SparskitQuickLU::solve(Mat * k, Vec * u, Vec * f)
+  LAS_INLINE void SparskitQuickLU::solve(Mat * k, Vec * u, Vec * f)
   {
     skMat * mat = getSparskitMatrix(k);
     skVec * uv = getSparskitVector(u);

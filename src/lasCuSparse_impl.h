@@ -3,6 +3,7 @@
 #include "lasSparse.h"
 #include "lasSparse_impl.h"
 #include "lasDebug.h"
+#include "lasInline.h"
 #include "las.h"
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
@@ -16,28 +17,28 @@ namespace las
   typedef csrMat cuMat;
   typedef simpleVec cuVec;
   template <>
-  inline void alloc<cuHost>(void ** dat, size_t sz)
+  LAS_INLINE void alloc<cuHost>(void ** dat, size_t sz)
   {
     DBG(cudaError_t status =)
       cudaMallocHost(dat,sz);
     assert(status == cudaSuccess && "Allocation of cuda pinned host memory failed.");
   }
   template <>
-  inline void dealloc<cuHost>(void ** dat)
+  LAS_INLINE void dealloc<cuHost>(void ** dat)
   {
     DBG(cudaError_t status =)
       cudaFreeHost(dat);
     assert(status == cudaSuccess && "Deallocation of cuda pinned host memmory failed.");
   }
   template <>
-  inline void alloc<cuDev>(void ** dat, size_t sz)
+  LAS_INLINE void alloc<cuDev>(void ** dat, size_t sz)
   {
     DBG(cudaError_t status =)
       cudaMalloc(dat,sz);
     assert(status == cudaSuccess && "Allocation of cuda device memory failed.");
   }
   template <>
-  inline void dealloc<cuDev>(void ** dat)
+  LAS_INLINE void dealloc<cuDev>(void ** dat)
   {
     DBG(cudaError_t status =)
       cudaFree(dat);
@@ -91,18 +92,18 @@ namespace las
       // y = \alpha \times \mathit{op}(\mathbf{A}) \times x + \beta \times y
       // y = a * op(A) * x + b * y;
       cusparseDcsrmv_mp(cusparse,
-        CUSPARSE_OPERATION_NON_TRANSPOSE,
-        neq,
-        neq,
-        nnz,
-        &alpha, //a
-        mat_desc,
-        dev_csrVals,
-        dev_csrRows,
-        dev_csrCols,
-        dev_x,
-        &zero, //b
-        dev_y);
+                        CUSPARSE_OPERATION_NON_TRANSPOSE,
+                        neq,
+                        neq,
+                        nnz,
+                        &alpha, //a
+                        mat_desc,
+                        dev_csrVals,
+                        dev_csrRows,
+                        dev_csrCols,
+                        dev_x,
+                        &zero, //b
+                        dev_y);
       cudaMemcpy(&(*Y)[0], dev_y, sizeof(scalar) * (nnz), cudaMemcpyDeviceToHost);
       dealloc<cuDev>((void**)&dev_csrRows);
       dealloc<cuDev>((void**)&dev_csrCols);
@@ -115,7 +116,7 @@ namespace las
       cusparseDestroyMatDescr(mat_desc);
     }
   };
-  inline MatVecMult * createCuMatVecMult()
+  LAS_INLINE MatVecMult * createCuMatVecMult()
   {
     return new cuMatVecMult;
   }
@@ -237,7 +238,7 @@ namespace las
       cublasDestroy(cublas);
     }
   };
-  inline MatMatMult * createCuCsrMatMatMult()
+  LAS_INLINE MatMatMult * createCuCsrMatMatMult()
   {
     return new cu_csrMat_csrMatMult;
   }

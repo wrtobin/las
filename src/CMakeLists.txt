@@ -4,6 +4,7 @@ set(las_install las.h
                 lasCSR.h
                 lasCSR_impl.h
                 lasDebug.h
+                lasInline.h
                 lasScalar.h
                 lasSparse.h
                 lasNNZ.h
