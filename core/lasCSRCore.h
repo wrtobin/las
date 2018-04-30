@@ -9,6 +9,6 @@ namespace las
    *  on the dof numbering of an apf field. This only operates on the local
    *  values of the numbering, no mesh partitioning is considered.
    */
-  CSR * createCSR(apf::Numbering * num, int ndofs);
+  Sparsity * createCSR(apf::Numbering * num, int ndofs);
 }
 #endif
