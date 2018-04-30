@@ -1,7 +1,7 @@
 #ifndef LAS_H_
 #define LAS_H_
 #include "lasComm.h"
-#include "lasScalar.h"
+#include "lasSys.h"
 namespace las
 {
   /**
@@ -104,6 +104,17 @@ namespace las
   {
   public:
     virtual ~LasCreateMat() {};
+    /**
+     * Create a matrix.
+     * @param lcl The local number of rows (per-process in cm)
+     * @param bs  The block size (should be the same over cm)
+     * @param s   A Sparsity object for the particular backend a
+     *            subclass of this interface is implementing.
+     * @param cm  The comm over which the matrix is collective.
+     * @note Any of the arguments may be required to be LAS_NULL for
+     *       a particular backend, as they may be unused for that backend.
+     * @todo Allow creation of non-square matrices
+     */
     virtual Mat * create(unsigned lcl, unsigned bs, Sparsity * s, MPI_Comm cm) = 0;
     virtual void destroy(Mat * m) = 0;
   };
@@ -116,9 +127,23 @@ namespace las
   {
   public:
     virtual ~LasCreateVec() {};
+    /**
+     * Create a vector.
+     * @param lcl The local number of rows (per-process in cm)
+     * @param bs The block size (should be the same over cm)
+     * @param cm The comm over which the vector is collective.
+     */
     virtual Vec * create(unsigned lcl, unsigned bs, MPI_Comm cm) = 0;
     virtual void destroy(Vec * v) = 0;
+    /**
+     * Create a vector suitable to act as the RHS vector to a
+     *  supplied matrix.
+     */
     virtual Vec * createRHS(Mat * m);
+    /**
+     * Create a vector suitable to act as the LH"S vector to a
+     *  supplied matrix.
+     */
     virtual Vec * createLHS(Mat * m);
   };
   /**

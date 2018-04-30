@@ -5,8 +5,8 @@ set(las_install las.h
                 lasCSR_impl.h
                 lasDebug.h
                 lasInline.h
-                lasScalar.h
                 lasSparse.h
+                lasSys.h
                 lasNNZ.h
                 lasSparse_impl.h)
 set(las_headers lasCSRBuilder.h) #non-public headers

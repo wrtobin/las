@@ -1,6 +1,6 @@
 #ifndef LAS_CSR_H_
 #define LAS_CSR_H_
-#include "lasScalar.h"
+#include "lasSys.h"
 #include <vector>
 namespace las
 {

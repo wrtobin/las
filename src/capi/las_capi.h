@@ -1,6 +1,6 @@
 #ifndef LAS_CAPI_H_
 #define LAS_CAPI_H_
-#include "lasScalar.h"
+#include "lasSys.h"
 #include "lasComm.h"
 #define CONCAT_FUNC(pkg,fnc,bck) pkg ## _ ## fnc ## _ ## bck
 #define MAKE_PKG_FUNC(pkg,fnc,bck) CONCAT_FUNC(pkg,fnc,bck)
