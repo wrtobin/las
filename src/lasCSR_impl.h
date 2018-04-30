@@ -1,10 +1,11 @@
 #ifndef LAS_CSR_IMPL_H_
 #define LAS_CSR_IMPL_H_
 #include "lasDebug.h"
+#include "lasInline.h"
 #include <iostream>
 namespace las
 {
-  inline CSR::CSR(int r, int c,  int nz, int * rs, int * cs)
+  LAS_INLINE CSR::CSR(int r, int c,  int nz, int * rs, int * cs)
     : nr(r)
     , nc(c)
     , nnz(nz)
@@ -20,7 +21,7 @@ namespace las
         cls[cl]++;
     }
   }
-  inline Sparsity * csrFromArray(int rws, int cls, int nnz, int * row_arr, int * col_arr)
+  LAS_INLINE Sparsity * csrFromArray(int rws, int cls, int nnz, int * row_arr, int * col_arr)
   {
     return reinterpret_cast<Sparsity*>(new CSR(rws,cls,nnz,row_arr,col_arr));
   }

@@ -3,6 +3,7 @@
 #include "lasComm.h"
 #include "lasDebug.h"
 #include "lasNNZ.h"
+#include "lasInline.h"
 #include <petsc.h>
 #include <petscmat.h>
 #include <petscksp.h>
@@ -10,21 +11,21 @@
 #include <iostream>
 namespace las
 {
-  inline void initPETScLAS(int * argc, char ** argv[], MPI_Comm cm = LAS_COMM_WORLD)
+  LAS_INLINE void initPETScLAS(int * argc, char ** argv[], MPI_Comm cm = LAS_COMM_WORLD)
   {
     LAS_COMM_WORLD = cm;
     PETSC_COMM_WORLD = cm;
     PetscInitialize(argc,argv,PETSC_NULL,PETSC_NULL);
   }
-  inline void finalizePETScLAS()
+  LAS_INLINE void finalizePETScLAS()
   {
     PetscFinalize();
   }
-  inline ::Mat * getPetscMat(las::Mat * m)
+  LAS_INLINE ::Mat * getPetscMat(las::Mat * m)
   {
     return reinterpret_cast<::Mat*>(m);
   }
-  inline ::Vec * getPetscVec(las::Vec * v)
+  LAS_INLINE ::Vec * getPetscVec(las::Vec * v)
   {
     return reinterpret_cast<::Vec*>(v);
   }
@@ -94,7 +95,7 @@ namespace las
       VecRestoreArray(*getPetscVec(v),&vls);
     }
   };
-  inline las::Mat * createPetscMatrix(unsigned l, unsigned bs = 1, Sparsity * sprs = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
+  LAS_INLINE las::Mat * createPetscMatrix(unsigned l, unsigned bs = 1, Sparsity * sprs = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
   {
     bool have_sparsity = sprs != nullptr;
     NNZ * nnz = have_sparsity ? reinterpret_cast<NNZ*>(sprs) : nullptr;
@@ -139,23 +140,23 @@ namespace las
       MatSetOption(*m,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);
     return reinterpret_cast<las::Mat*>(m);
   }
-  inline void destroyPetscMat(las::Mat * m)
+  LAS_INLINE void destroyPetscMat(las::Mat * m)
   {
     MatDestroy(getPetscMat(m));
   }
-  inline las::Vec * createLHSVec(las::Mat * m)
+  LAS_INLINE las::Vec * createLHSVec(las::Mat * m)
   {
     ::Vec * v = new ::Vec;
     MatCreateVecs(*getPetscMat(m),v,nullptr);
     return reinterpret_cast<las::Vec*>(v);
   }
-  inline las::Vec * createRHSVec(las::Mat * m)
+  LAS_INLINE las::Vec * createRHSVec(las::Mat * m)
   {
     ::Vec * v = new ::Vec;
     MatCreateVecs(*getPetscMat(m),nullptr,v);
     return reinterpret_cast<las::Vec*>(v);
   }
-  inline las::Vec * createPetscVector(unsigned l, unsigned bs, MPI_Comm cm = LAS_COMM_WORLD)
+  LAS_INLINE las::Vec * createPetscVector(unsigned l, unsigned bs, MPI_Comm cm = LAS_COMM_WORLD)
   {
     ::Vec * v = new ::Vec;
     VecCreateMPI(cm,l,PETSC_DETERMINE,v);
@@ -163,7 +164,7 @@ namespace las
     VecSetOption(*v,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);
     return reinterpret_cast<las::Vec*>(v);
   }
-  inline void destroyPetscVec(las::Vec * v)
+  LAS_INLINE void destroyPetscVec(las::Vec * v)
   {
     VecDestroy(getPetscVec(v));
   }
@@ -200,7 +201,7 @@ namespace las
     }
   };
   template <>
-  inline LasCreateMat * getMatBuilder<petsc>(int)
+  LAS_INLINE LasCreateMat * getMatBuilder<petsc>(int)
   {
     static petscMatBuilder * mb = nullptr;
     if(mb == nullptr)
@@ -208,7 +209,7 @@ namespace las
     return mb;
   }
   template <>
-  inline LasCreateVec * getVecBuilder<petsc>(int)
+  LAS_INLINE LasCreateVec * getVecBuilder<petsc>(int)
   {
     static petscVecBuilder * vb = nullptr;
     if(vb == nullptr)
@@ -216,7 +217,7 @@ namespace las
     return vb;
   }
   template <>
-  inline LasOps<petsc> * getLASOps()
+  LAS_INLINE LasOps<petsc> * getLASOps()
   {
     static petsc * ops = NULL;
     if(ops == NULL)
@@ -259,7 +260,7 @@ namespace las
       KSPSolve(ksp,*pf,*pu);
     }
   };
-  inline Solve * createPetscLUSolve(MPI_Comm cm = LAS_COMM_WORLD)
+  LAS_INLINE Solve * createPetscLUSolve(MPI_Comm cm = LAS_COMM_WORLD)
   {
     return new PetscLUSolve(cm);
   }
@@ -320,7 +321,7 @@ namespace las
       SNESDestroy(&snes);
     }
   };
-  inline Solve * createPetscQNSolve(void * a)
+  LAS_INLINE Solve * createPetscQNSolve(void * a)
   {
     return new PetscQNSolve(a);
   }
@@ -335,7 +336,7 @@ namespace las
       MatMult(*px,*pa,*pb);
     }
   };
-  inline MatVecMult * createPetscMatVecMult()
+  LAS_INLINE MatVecMult * createPetscMatVecMult()
   {
     return new PetscMatVecMult;
   }
@@ -367,7 +368,7 @@ namespace las
         ::MatMatMult(*pa,*pb,MAT_REUSE_MATRIX,PETSC_DEFAULT,*pc);
     }
   };
-  inline MatMatMult * createPetscMatMatMult()
+  LAS_INLINE MatMatMult * createPetscMatMatMult()
   {
     return new PetscMatMatMult;
   }

@@ -3,7 +3,7 @@
 #include <cassert>
 namespace las
 {
-  class CSRBuilder
+  class CSRFromNumbering : public CSRBuilder
   {
   protected:
     apf::Numbering * nm;
@@ -14,8 +14,9 @@ namespace las
     std::vector<int> rws;
     std::vector<int> cls;
   public:
-    CSRBuilder(apf::Numbering * n, int nd)
-      : nm(n)
+    CSRFromNumbering(apf::Numbering * n, int nd)
+      : CSRBuilder(nd,nd)
+      , nm(n)
       , ment(NULL)
       , nedofs(0)
       , ndofs(nd)
@@ -27,7 +28,7 @@ namespace las
       rws.assign(ndofs+1,1);
       cls.assign(ndofs*ndofs,0);
     }
-    void apply()
+    void run()
     {
       apf::Mesh * msh = apf::getMesh(apf::getField(nm));
       // find the highest dimension with mesh entities
@@ -43,19 +44,14 @@ namespace las
         int nedofs = apf::getElementNumbers(nm, ent, dofs);
         for(int ii = 0; ii < nedofs; ii++)
           for(int jj = 0; jj < nedofs; jj++)
-            if(addNonzero(&rws[0],dofs[ii],&cls[0],dofs[jj],ndofs))
-              nnz++;
+            add(dofs[ii],dofs[jj]);
       }
     }
-    CSR * finalize()
-    {
-      return new CSR(ndofs,ndofs,nnz,&rws[0],&cls[0]);
-    }
   };
-  CSR * createCSR(apf::Numbering * num, int ndofs)
+  Sparsity * createCSR(apf::Numbering * num, int ndofs)
   {
-    CSRBuilder bldr(num,ndofs);
-    bldr.apply();
+    CSRFromNumbering bldr(num,ndofs);
+    bldr.run();
     return bldr.finalize();
   }
 }
