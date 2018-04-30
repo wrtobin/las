@@ -22,6 +22,12 @@ namespace las
       , cl_cnt(num_cols)
     { }
     bool add(int rw, int cl);
+    /**
+     * Finalize the CSR data structure and retrieve it
+     *  as a Sparsity*. This also resets the builder so
+     *  it is immediately ready to use to create another
+     *  CSR.
+     */
     Sparsity * finalize();
     /**
      * Reset the internal data structure to reuse the
