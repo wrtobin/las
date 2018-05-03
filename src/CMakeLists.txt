@@ -10,6 +10,7 @@ set(las_install las.h
                 lasDense_impl.h
                 lasInline.h
                 lasSparse.h
+                lasSparseDense.h
                 lasSys.h
                 lasNNZ.h
                 lasSparse_impl.h
@@ -20,7 +21,8 @@ set(las_sources las.cc
                 lasCSR.cc
                 lasCSRBuilder.cc
                 lasDense.cc
-                lasSparse.cc)
+                lasSparse.cc
+                lasSparseDense.cc)
 
 function(to_include header_list include_string)
   foreach(header IN LISTS ${header_list})

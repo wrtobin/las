@@ -31,7 +31,7 @@ namespace las
       int x_nc = x->getNumCols();
       int y_nr = y->getNumRows();
       int y_nc = y->getNumCols();
-      assert(x_nc == y_nr && "Matrix X cols must equal matrix y rows");
+      assert(x_nc == y_nr && "Matrix X cols must equal matrix Y rows");
       Sparsity * dnsty = createDensity(x_nr,y_nc);
       (*zm) = createDnsMat(dnsty);
       delete reinterpret_cast<Density*>(dnsty);
@@ -42,4 +42,18 @@ namespace las
             (*z)(xrw,ycl) += (*x)(xrw,inr) * (*y)(inr,ycl);
     }
   };
+  MatVecMult * getDenseMatVecMult()
+  {
+    static denseMatVec * mv = nullptr;
+    if(mv == nullptr)
+      mv = new denseMatVec;
+    return mv;
+  }
+  MatMatMult * getDenseMatMatMult()
+  {
+    static denseMatMat * mm = nullptr;
+    if(mm == nullptr)
+      mm = new denseMatMat;
+    return mm;
+  }
 }
