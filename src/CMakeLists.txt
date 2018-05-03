@@ -6,17 +6,23 @@ set(las_install las.h
                 lasCSRBuilder.h
                 lasCSRBuilder_impl.h
                 lasDebug.h
+                lasDense.h
+                lasDense_impl.h
                 lasInline.h
                 lasSparse.h
+                lasSparseDense.h
                 lasSys.h
                 lasNNZ.h
-                lasSparse_impl.h)
+                lasSparse_impl.h
+                lasVec_impl.h)
 set(las_headers ) #non-public headers
 set(las_sources las.cc
                 lasComm.cc
                 lasCSR.cc
                 lasCSRBuilder.cc
-                lasSparse.cc)
+                lasDense.cc
+                lasSparse.cc
+                lasSparseDense.cc)
 
 function(to_include header_list include_string)
   foreach(header IN LISTS ${header_list})
