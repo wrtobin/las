@@ -15,7 +15,7 @@ namespace las
   class cuDev;
   typedef cuHost cuDefAlloc;
   typedef csrMat cuMat;
-  typedef simpleVec cuVec;
+  typedef lasVec cuVec;
   template <>
   LAS_INLINE void alloc<cuHost>(void ** dat, size_t sz)
   {
@@ -51,8 +51,8 @@ namespace las
     void exec(Mat * a, Vec * x, Vec * y)
     {
       cuMat * A = getCSRMat(a);
-      cuVec * X = getSimpleVec(x);
-      cuVec * Y = getSimpleVec(y);
+      cuVec * X = getLASVec(x);
+      cuVec * Y = getLASVec(y);
       // this *could* be placed in the lasMultiply constructor if we specified the matrix and vector up-front (or at least the csr structure), if we passed the mat and vecs up-front we could also move data to the device as it is set in the relevant CPU data structures instead of all-at-once
       cublasHandle_t  cublas = nullptr;
       cusparseHandle_t cusparse = nullptr;

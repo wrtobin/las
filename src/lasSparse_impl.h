@@ -3,6 +3,7 @@
 #include "lasAlloc.h"
 #include "lasCSR.h"
 #include "lasInline.h"
+#include "lasVec_impl.h"
 #include <cassert>
 #include <cmath>
 #include <cstring> //memset
@@ -44,46 +45,9 @@ namespace las
       memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero() + 2));
     }
   };
-  class simpleVec
-  {
-  private:
-    scalar * vls;
-    int cnt;
-  public:
-    simpleVec(int n)
-      : vls(nullptr)
-      , cnt(n)
-    {
-      alloc<Malloc>((void**)&vls,sizeof(scalar)*(n+1));
-    }
-    ~simpleVec()
-    {
-      dealloc<Malloc>((void**)vls);
-    }
-    scalar & operator[](int idx)
-    {
-      assert(idx < cnt);
-      if(idx < 0)
-        idx = cnt;
-      return vls[idx];
-    }
-    int size()
-    {
-      return cnt;
-    }
-    // too coupled to the implementation to leave external
-    void zero()
-    {
-      memset(&vls[0],0,sizeof(scalar)*(cnt+1));
-    }
-  };
   LAS_INLINE csrMat * getCSRMat(Mat * m)
   {
     return reinterpret_cast<csrMat*>(m);
-  }
-  LAS_INLINE simpleVec * getSimpleVec(Vec * v)
-  {
-    return reinterpret_cast<simpleVec*>(v);
   }
   LAS_INLINE Mat * createCSRMatrix(Sparsity * csr)
   {
@@ -92,14 +56,6 @@ namespace las
   LAS_INLINE void destroyCSRMatrix(Mat * m)
   {
     delete getCSRMat(m);
-  }
-  LAS_INLINE Vec * createVector(unsigned n)
-  {
-    return reinterpret_cast<Vec*>(new simpleVec(n));
-  }
-  LAS_INLINE void destroyVector(Vec * v)
-  {
-    delete getSimpleVec(v);
   }
   class csrMatBuilder : public LasCreateMat
   {
@@ -166,7 +122,7 @@ namespace las
     }
     void _zero(Vec * v)
     {
-      getSimpleVec(v)->zero();
+      getLASVec(v)->zero();
     }
     void _zero(Mat * m, int rw)
     {
@@ -177,7 +133,7 @@ namespace las
     }
     void _assemble(Vec * v, int cnt, int * rws, scalar * vls)
     {
-      simpleVec * vec = getSimpleVec(v);
+      lasVec * vec = getLASVec(v);
       for(int ii = 0; ii < cnt; ++ii)
         (*vec)[rws[ii]] += vls[ii];
     }
@@ -188,13 +144,13 @@ namespace las
         for(int jj = 0; jj < cntc; ++jj)
         {
           scalar vl = vls[ii * cntc + jj];
-          if(vl != 0.0) // don't want to attempt to access zero locations in a sparse matrix
-            (*mat)(rws[ii],cls[jj]) += vls[ii * cntc + jj];
+          //if(vl != 0.0) // don't want to attempt to access zero locations in a sparse matrix
+              (*mat)(rws[ii],cls[jj]) += vl;
         }
     }
     void _set(Vec * v, int cnt, int * rws, scalar * vls)
     {
-      simpleVec * vec = getSimpleVec(v);
+      lasVec * vec = getLASVec(v);
       for(int ii = 0; ii < cnt; ++ii)
         (*vec)[rws[ii]] = vls[ii];
     }
@@ -207,7 +163,7 @@ namespace las
     }
     void _get(Vec * v, int cntr, int * rws, scalar ** vls)
     {
-      simpleVec * vec = getSimpleVec(v);
+      lasVec * vec = getLASVec(v);
       *vls = new scalar[cntr]();
       for(int ii = 0; ii < cntr; ++ii)
         (*vls)[ii] = (*vec)[rws[ii]];
@@ -222,7 +178,7 @@ namespace las
     }
     scalar _norm(Vec * v)
     {
-      simpleVec * vec = getSimpleVec(v);
+      lasVec * vec = getLASVec(v);
       scalar nrm = 0.0;
       for(int ii = 0; ii < vec->size(); ++ii)
         nrm += (*vec)[ii] * (*vec)[ii];
@@ -231,8 +187,8 @@ namespace las
     }
     scalar _dot(Vec * v0, Vec * v1)
     {
-      simpleVec * vec0 = getSimpleVec(v0);
-      simpleVec * vec1 = getSimpleVec(v1);
+      lasVec * vec0 = getLASVec(v0);
+      lasVec * vec1 = getLASVec(v1);
       int sz0 = vec0->size();
       assert(sz0 == vec1->size());
       scalar dt = 0.0;
@@ -242,8 +198,8 @@ namespace las
     }
     void _axpy(scalar a, Vec * x, Vec * y)
     {
-      simpleVec * vx = getSimpleVec(x);
-      simpleVec * vy = getSimpleVec(y);
+      lasVec * vx = getLASVec(x);
+      lasVec * vy = getLASVec(y);
       int szx = vx->size();
       assert(szx == vy->size());
       for(int ii = 0; ii < szx; ++ii)
@@ -252,7 +208,7 @@ namespace las
     }
     void _get(Vec * v, scalar *& vls)
     {
-      simpleVec * vec = getSimpleVec(v);
+      lasVec * vec = getLASVec(v);
       vls = &(*vec)[0];
     }
     void _restore(Vec*, scalar *&)

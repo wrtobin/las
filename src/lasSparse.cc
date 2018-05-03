@@ -9,8 +9,8 @@ namespace las
     {
       csrMat * cm = getCSRMat(x);
       CSR * csr = cm->getCSR();
-      simpleVec * sa = getSimpleVec(a);
-      simpleVec * sb = getSimpleVec(b);
+      lasVec * sa = getLASVec(a);
+      lasVec * sb = getLASVec(b);
       int nr = csr->getNumRows();
       int nc = csr->getNumCols();
       int la = sa->size();
@@ -36,7 +36,7 @@ namespace las
       int y_nr = y_csr->getNumRows();
       int y_nc = y_csr->getNumCols();
       assert(x_nc == y_nr && "Matrix X cols must equal Matrix Y rows");
-      CSRBuilder bld(x_nr,x_nr);;
+      CSRBuilder bld(x_nr,x_nr);
       for(int xrw = 0; xrw < x_nr; ++xrw)
         for(int ycl = 0; ycl < y_nc; ++ycl)
           for(int inr = 0; inr < x_nc; ++inr)

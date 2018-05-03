@@ -9,7 +9,7 @@
 namespace las
 {
   typedef csrMat skMat;
-  typedef simpleVec skVec;
+  typedef lasVec skVec;
   LAS_INLINE skMat * getSparskitMatrix(Mat * m)
   {
     return reinterpret_cast<skMat*>(m);
