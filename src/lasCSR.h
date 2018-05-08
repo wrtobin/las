@@ -2,6 +2,7 @@
 #define LAS_CSR_H_
 #include "lasSys.h"
 #include <vector>
+#include <iostream>
 namespace las
 {
   class Sparsity;
@@ -40,10 +41,11 @@ namespace las
     int operator()(int rw, int cl) const
     {
       int result = -1;
-      int fst = rws[rw] - 1; // 1-indexing    v also here
+      int fst = rws[rw] - 1;
       while((fst < rws[rw+1] - 2) && (cls[fst] - 1 < cl))
         ++fst;
-      if(cls[fst] - 1 == cl) // 1-indexing
+      // the column is correct at offset and the row isn't empty
+      if(cls[fst] - 1 == cl && rws[rw] - 1 <= rws[rw+1] - 2)
         result = fst;
       else
         result = -1;
