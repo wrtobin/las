@@ -13,17 +13,27 @@ namespace las
   {
     scalar * vls; // nnz +2 (dumy write, 0.0 read)
     CSR * csr;
+    bool own;
   public:
-    csrMat(CSR * c)
+    csrMat(CSR * c, bool o = false)
       : vls(nullptr)
       , csr(c)
+      , own(o)
     {
-      alloc<Malloc>((void**)&vls,sizeof(scalar) * (c->getNumNonzero() + 2));
+      //alloc<Malloc>((void**)&vls,sizeof(scalar) * (c->getNumNonzero() + 2));
+      vls = new scalar[c->getNumNonzero()+2];
       memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero() + 2));
     }
     ~csrMat()
     {
-      dealloc<Malloc>((void**)&vls);
+      delete [] vls;
+      vls = nullptr;
+      if(own)
+      {
+        delete csr;
+        csr = nullptr;
+       }
+      //dealloc<Malloc>((void**)&vls);
     }
     scalar & operator()(int rr, int cc)
     {
@@ -49,9 +59,9 @@ namespace las
   {
     return reinterpret_cast<csrMat*>(m);
   }
-  LAS_INLINE Mat * createCSRMatrix(Sparsity * csr)
+  LAS_INLINE Mat * createCSRMatrix(Sparsity * csr, bool o = false)
   {
-    return reinterpret_cast<Mat*>(new csrMat(reinterpret_cast<CSR*>(csr)));
+    return reinterpret_cast<Mat*>(new csrMat(reinterpret_cast<CSR*>(csr),o));
   }
   LAS_INLINE void destroyCSRMatrix(Mat * m)
   {

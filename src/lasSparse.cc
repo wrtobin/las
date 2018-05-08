@@ -43,7 +43,7 @@ namespace las
             if(((*x_csr)(xrw,inr) >= 0 && (*y_csr)(inr,ycl) >= 0))
               bld.add(xrw,ycl);
       Sparsity * z_csr = bld.finalize();
-      (*z) = createCSRMatrix(z_csr);
+      (*z) = createCSRMatrix(z_csr,true);
       csrMat * cz = getCSRMat(*z);
       for(int xrw = 0; xrw < x_nr; ++xrw)
         for(int ycl = 0; ycl < y_nc; ++ycl)

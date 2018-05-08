@@ -31,6 +31,9 @@ int main(int ac,char * av[])
   for(int idx = 0; idx < 9; ++idx)
     assert(rst_arr[idx] == col[idx]);
   delete [] rst_arr;
+  mat_fct->destroy(rst);
+  mat_fct->destroy(eye_mat);
+  mat_fct->destroy(col_mat);
   double empty_row[] = {1.0, 0.0, 1.0,
                         0.0, 0.0, 0.0,
                         1.0, 0.0, 1.0};
@@ -51,6 +54,9 @@ int main(int ac,char * av[])
   for(int idx = 0; idx < 9; idx++)
     assert(rst2_arr[idx] == expect[idx]);
   delete [] rst2_arr;
+  mat_fct->destroy(rst2);
+  mat_fct->destroy(row_col_mat);
+  mat_fct->destroy(empty_row_mat);
   MPI_Finalize();
   return 0;
 }
