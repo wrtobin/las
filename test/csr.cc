@@ -1,8 +1,10 @@
 #include "lasSparse.h"
 #include <cassert>
 #include <sstream>
-int main(int,char*[])
+#include <mpi.h>
+int main(int ac,char * av[])
 {
+  MPI_Init(&ac,&av);
   double eye[] = { 1.0 , 0.0 , 0.0 ,
                    0.0 , 1.0 , 0.0 ,
                    0.0 , 0.0 , 1.0 };
@@ -29,5 +31,26 @@ int main(int,char*[])
   for(int idx = 0; idx < 9; ++idx)
     assert(rst_arr[idx] == col[idx]);
   delete [] rst_arr;
+  double empty_row[] = {1.0, 0.0, 1.0,
+                        0.0, 0.0, 0.0,
+                        1.0, 0.0, 1.0};
+  double row_col[] = {1.0, 1.0, 1.0,
+                      1.0, 0.0, 0.0,
+                      1.0, 0.0, 0.0};
+  las::Mat * empty_row_mat = mat_fct->create(LAS_IGNORE,LAS_IGNORE,las::csrFromFull(&empty_row[0],3,3),MPI_COMM_SELF);
+  las::Mat * row_col_mat = mat_fct->create(LAS_IGNORE,LAS_IGNORE,las::csrFromFull(&row_col[0],3,3),MPI_COMM_SELF);
+  ops->set(empty_row_mat,3,&rwcls[0],3,&rwcls[0],&empty_row[0]);
+  ops->set(row_col_mat,3,&rwcls[0],3,&rwcls[0],&row_col[0]);
+  las::Mat * rst2 = nullptr;
+  mlt->exec(empty_row_mat,row_col_mat,&rst2);
+  double * rst2_arr = nullptr;
+  ops->get(rst2,3,&rwcls[0],3,&rwcls[0],&rst2_arr);
+  double expect[] = {2.0, 1.0, 1.0,
+                     0.0, 0.0, 0.0,
+                     2.0, 1.0, 1.0};
+  for(int idx = 0; idx < 9; idx++)
+    assert(rst2_arr[idx] == expect[idx]);
+  delete [] rst2_arr;
+  MPI_Finalize();
   return 0;
 }
