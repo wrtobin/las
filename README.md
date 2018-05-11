@@ -28,7 +28,9 @@ class xxxOps : public LasOps\<xxxOps\>
 
 **The implementation of the class interface functions may occur inline in the function declaration in lasXXX.h ONLY FOR simple functions which DO NOT DIRECTLY CALL ANY BACKEND API functions.**
 
-**Anything which explicitly makes calls to the backend API is implemented in the lasXXX_impl.h file, and is defined as an inline member function.**
+**Anything which explicitly makes calls to the backend API is implemented in the lasXXX_impl.h file, and is should make use of the LAS_INLINE macro to declare itself inline.**
+
+The LAS_INLINE macro is intended to provide compiler-specific forced inlining when possible, it is defined in lasInline.h.
 
 Following these guidelines (see lasSparskit.h and lasSparskit_impl.h for an example) allows the use of these functions to be zero-overhead when building in release mode using -O3.
 

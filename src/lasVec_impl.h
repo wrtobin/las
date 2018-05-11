@@ -3,6 +3,7 @@
 #include "lasAlloc.h"
 #include "lasInline.h"
 #include <cassert>
+#include <cstring> // memset
 namespace las
 {
   class lasVec
