@@ -179,7 +179,7 @@ namespace las
     {
       dnsMat * dns = getDnsMat(m);
       *vls = new scalar[cntr*cntc]();
-      for(int ii = 0; ii > cntr; ++ii)
+      for(int ii = 0; ii < cntr; ++ii)
         for(int jj = 0; jj < cntc; ++jj)
           (*vls)[ii*cntc+jj] = (*dns)(rws[ii],cls[jj]);
     }

@@ -22,8 +22,11 @@ function(simple_test name file)
   add_test(NAME "${name}_test" COMMAND ${name})
 endfunction(simple_test)
 
-add_mpi_test(csr csr.cc 1)
-target_link_libraries(csr las)
+add_mpi_test(sparse sparse.cc 1)
+target_link_libraries(sparse las)
+
+add_mpi_test(dense dense.cc 1)
+target_link_libraries(dense las)
 
 if(CUDA_FOUND)
   message(STATUS "Adding CUDA test cases:")
