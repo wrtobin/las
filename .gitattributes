@@ -1,0 +1,3 @@
+doc/* linguist-documentation
+sparskit/* linguist-vendored
+kokkos/* linguist-vendored
