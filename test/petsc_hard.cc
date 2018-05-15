@@ -1,5 +1,6 @@
 #include "petsc_virt.h"
 #include "timer.h"
+#include <lasConfig.h>
 #include <petsc.h>
 #include <mpi.h>
 #include <apf.h>
@@ -86,9 +87,11 @@ int main(int argc, char * argv[])
   msh->end(it);
   it = msh->begin(lmt_dim);
   apf::NewArray<int> nums(nds_per_lmt);
-#if defined(TEST_LASOPS)
-  las::lasOps<las::petsc> * las_ops = las::getLasOps<las::petsc>();
+#if defined(TEST_LASOPS) || defined(TEST_VIRTUAL)
   las::Mat * las_K = reinterpret_cast<las::Mat*>(K);
+#endif
+#if defined(TEST_LASOPS)
+  las::LasOps<las::petsc> * las_ops = las::getLASOps<las::petsc>();
 #elif defined(TEST_CVIRT)
   cops * petsc_cops = createPetscCops();
 #elif defined(TEST_VIRTUAL)
@@ -105,11 +108,11 @@ int main(int argc, char * argv[])
 #elif defined(TEST_LASOPS)
     las_ops->assemble(las_K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #elif defined(TEST_CALL)
-    add(m,nds_per_lmt,&nums[0],&nds_per_lmt,&nums[0],&ke[0]);
+    add(K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #elif defined(TEST_CVIRT)
-    (*cops->add)(m,nds_per_lmt,&nums[0],&nds_per_lmt,&nums[0],&ke[0]);
+    (*petsc_cops->add)(K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #elif defined(TEST_VIRTUAL)
-    petsc_ops->add(las_K,nds_pet_lmt,&nums[0],nds_pet_lmt,&nums[0],&ke[0]);
+    petsc_ops->add(las_K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #endif
     msh->end(it);
   }
