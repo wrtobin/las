@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR) # version 3.8 adds cuda as a lan
 project(las)
 set(LAS_MAJOR_VERSION 0)
 set(LAS_MINOR_VERSION 1)
-set(LAS_PATCH_VERSION 18)
+set(LAS_PATCH_VERSION 19)
 set(LAS_VERSION ${LAS_MAJOR_VERSION}.${LAS_MINOR_VERSION}.${LAS_PATCH_VERSION})
 enable_language(CXX)
 enable_language(C)
