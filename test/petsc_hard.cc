@@ -1,5 +1,6 @@
 #include "petsc_virt.h"
 #include "timer.h"
+#include <lasConfig.h>
 #include <petsc.h>
 #include <mpi.h>
 #include <apf.h>
@@ -86,9 +87,11 @@ int main(int argc, char * argv[])
   msh->end(it);
   it = msh->begin(lmt_dim);
   apf::NewArray<int> nums(nds_per_lmt);
-#if defined(TEST_LASOPS)
-  las::lasOps<las::petsc> * las_ops = las::getLasOps<las::petsc>();
+#if defined(TEST_LASOPS) || defined(TEST_VIRTUAL)
   las::Mat * las_K = reinterpret_cast<las::Mat*>(K);
+#endif
+#if defined(TEST_LASOPS)
+  las::LasOps<las::petsc> * las_ops = las::getLASOps<las::petsc>();
 #elif defined(TEST_CVIRT)
   cops * petsc_cops = createPetscCops();
 #elif defined(TEST_VIRTUAL)
@@ -96,23 +99,33 @@ int main(int argc, char * argv[])
 #endif
   MatZeroEntries(K); // collective on petsc_comm_world
   unsigned long long span[2] = {0,0};
+#ifdef TEST_SINGLE
+  unsigned long long inst[2] = {0,0};
+#endif
   span[0] = rdtsc();
   while((ent = msh->iterate(it)))
   {
     apf::getElementNumbers(num,ent,nums);
+#ifdef TEST_SINGLE
+    inst[0] = rdtsc();
+#endif
 #if defined(TEST_RAW)
     MatSetValues(K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0],ADD_VALUES);
 #elif defined(TEST_LASOPS)
     las_ops->assemble(las_K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #elif defined(TEST_CALL)
-    add(m,nds_per_lmt,&nums[0],&nds_per_lmt,&nums[0],&ke[0]);
+    add(K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #elif defined(TEST_CVIRT)
-    (*cops->add)(m,nds_per_lmt,&nums[0],&nds_per_lmt,&nums[0],&ke[0]);
+    (*petsc_cops->add)(K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #elif defined(TEST_VIRTUAL)
-    petsc_ops->add(las_K,nds_pet_lmt,&nums[0],nds_pet_lmt,&nums[0],&ke[0]);
+    petsc_ops->add(las_K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #endif
-    msh->end(it);
+#ifdef TEST_SINGLE
+    inst[1] = rdtsc();
+    break;
+#endif
   }
+  msh->end(it);
   span[1] = rdtsc();
   MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);
@@ -141,7 +154,11 @@ int main(int argc, char * argv[])
   MPI_File_open(PETSC_COMM_WORLD,fnm.c_str(),MPI_MODE_CREATE|MPI_MODE_WRONLY,MPI_INFO_NULL,&fout);
   MPI_File_set_view(fout,lcl_offset,MPI_UNSIGNED_LONG_LONG,out_tp,"native",MPI_INFO_NULL);
   MPI_Status sts;
-  MPI_File_write(fout,&span[0],1,out_tp,&sts);
+#ifdef TEST_SINGLE
+    MPI_File_write(fout,&inst[0],1,out_tp,&sts);
+#else
+    MPI_File_write(fout,&span[0],1,out_tp,&sts);
+#endif
   MPI_File_close(&fout);
   PetscFinalize();
   MPI_Finalize();
