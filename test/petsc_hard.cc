@@ -8,6 +8,8 @@
 #include <apfMDS.h>
 #include <apfNumbering.h>
 #include <apfShape.h>
+#include <gmi_sim.h>
+#include <PCU.h>
 #include <cassert>
 #include <iostream>
 #include <string>
@@ -15,12 +17,20 @@ int main(int argc, char * argv[])
 {
   assert(argc == 3);
   MPI_Init(&argc,&argv);
+  PCU_Comm_Init();
+  gmi_sim_start();
+  gmi_register_sim();
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
+  //PetscPopSignalHandler();
+  int rnk = -1;
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rnk);
   apf::Mesh * msh = apf::loadMdsMesh(argv[1],argv[2]);
   int lmt_dim = msh->getDimension();
   apf::Field * fld = apf::createLagrangeField(msh,"u",apf::VECTOR,1);
+  apf::zeroField(fld);
   apf::FieldShape * shp = apf::getShape(fld);
   apf::Numbering * num = apf::createNumbering(msh,"u_num",shp,1); // only number the nodes
+  // number all the nodes
   apf::MeshIterator * it = nullptr;
   apf::MeshEntity * ent = nullptr;
   int lcl_blks = 0;
@@ -35,12 +45,48 @@ int main(int argc, char * argv[])
         {
           int ent_tp = msh->getType(ent);
           int tp_nds = shp->countNodesOn(ent_tp);
-          for(int nd = 0; nd < tp_nds; ++nd) // assuming 1 component
+          for(int nd = 0; nd < tp_nds; ++nd) // assuming 1 component / blocks
             apf::number(num,ent,nd,0,lcl_blks++);
         }
       }
+      msh->end(it);
     }
   }
+  int frst_lcl_blk = 0;
+  MPI_Exscan(&lcl_blks,&frst_lcl_blk,1,MPI_INTEGER,MPI_SUM,PETSC_COMM_WORLD);
+  apf::setNumberingOffset(num,frst_lcl_blk);
+  apf::synchronize(num); // number ghosts
+  /*
+  apf::writeVtkFiles("cube_num",msh);
+  int own_vrts = apf::countOwned(msh,0);
+  std::cout << "[" << rnk << "] : owns " << own_vrts << " vtx" << std::endl;
+  it = msh->begin(0);
+  while((ent = msh->iterate(it))) // only vertices hold nodes
+    if(!msh->isOwned(ent))
+    {
+      apf::Copies gsts;
+      msh->getRemotes(ent,gsts);
+      int gst_cnt = gsts.size();
+      std::cout << "[" << rnk << "] : gst vtx with " << gst_cnt << " gsts" << std::endl;
+    }
+  msh->end(it);
+  // report ownership infor for debugging
+  it = msh->begin(0);
+  while((ent = msh->iterate(it))) // only vertices hold nodes
+    if(msh->isOwned(ent))
+    {
+      int ent_tp = msh->getType(ent);
+      int tp_nds = shp->countNodesOn(ent_tp);
+      int blk_id = -1;
+      for(int nd = 0; nd < tp_nds; ++nd) // assuming 1 component / blocks
+      {
+        apf::getNumber(num,ent,nd,blk_id);
+        std::cout << "[" << rnk << "] : owns vtx with node " << blk_id << std::endl;
+      }
+    }
+  msh->end(it);
+  */
+  // build nonzero structure of the matrix
   std::vector<int> dnnz(lcl_blks,0);
   std::vector<int> onnz(lcl_blks,0);
   apf::Adjacent adj;
@@ -51,20 +97,26 @@ int main(int argc, char * argv[])
     {
       //assuming 1 node per vert
       int blk_id = apf::getNumber(num,ent,0,0);
+      int adj_id = -1;
       apf::getBridgeAdjacent(msh,ent,lmt_dim,0,adj);
       for(size_t ii = 0; ii < adj.getSize(); ++ii)
       {
+        adj_id = apf::getNumber(num,adj[ii],0,0);
+        //std::cout << "[" << rnk << "] : owns " << blk_id;
         if(msh->isOwned(adj[ii]))
+        {
           dnnz[blk_id]++;
+          //std::cout << " adj to ownd " << adj_id << std::endl;
+        }
         else
+        {
           onnz[blk_id]++;
+          //std::cout << " adj to ghst " << adj_id << std::endl;
+        }
       }
     }
   }
-  int frst_lcl_blk = 0;
-  MPI_Exscan(&lcl_blks,&frst_lcl_blk,1,MPI_INTEGER,MPI_SUM,PETSC_COMM_WORLD);
-  apf::setNumberingOffset(num,frst_lcl_blk);
-  apf::synchronize(num); // number ghosts
+  msh->end(it);
   int blk_sz = apf::countComponents(fld);
   int lcl_dof_cnt = blk_sz * lcl_blks;
   Mat K;
@@ -88,7 +140,7 @@ int main(int argc, char * argv[])
   it = msh->begin(lmt_dim);
   apf::NewArray<int> nums(nds_per_lmt);
 #if defined(TEST_LASOPS) || defined(TEST_VIRTUAL)
-  las::Mat * las_K = reinterpret_cast<las::Mat*>(K);
+  las::Mat * las_K = reinterpret_cast<las::Mat*>(&K);
 #endif
 #if defined(TEST_LASOPS)
   las::LasOps<las::petsc> * las_ops = las::getLASOps<las::petsc>();
@@ -98,16 +150,21 @@ int main(int argc, char * argv[])
   ops * petsc_ops = createPetscOps();
 #endif
   MatZeroEntries(K); // collective on petsc_comm_world
-  unsigned long long span[2] = {0,0};
 #ifdef TEST_SINGLE
-  unsigned long long inst[2] = {0,0};
+  //unsigned long long inst[2] = {0,0};
+  double t3 = 0.0;
+  double t4 = 0.0;
+#else
+  //unsigned long long span[2] = {0,0};
+    double t1 = PCU_Time();
 #endif
-  span[0] = rdtsc();
+  //span[0] = rdtsc();
   while((ent = msh->iterate(it)))
   {
     apf::getElementNumbers(num,ent,nums);
 #ifdef TEST_SINGLE
-    inst[0] = rdtsc();
+    //inst[0] = rdtsc();
+    t3 = PCU_Time();
 #endif
 #if defined(TEST_RAW)
     MatSetValues(K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0],ADD_VALUES);
@@ -121,15 +178,20 @@ int main(int argc, char * argv[])
     petsc_ops->add(las_K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #endif
 #ifdef TEST_SINGLE
-    inst[1] = rdtsc();
+    //inst[1] = rdtsc();
+    t4 = PCU_Time();
     break;
 #endif
   }
   msh->end(it);
-  span[1] = rdtsc();
+#ifndef TEST_SINGLE
+  //span[1] = rdtsc();
+  double t2 = PCU_Time();
+#endif
   MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);
-  MatDestroy(&K);
+  //MatDestroy(&K);
+  /*
 #if defined(TEST_RAW)
   std::string fnm("raw_results");
 #elif defined(TEST_LASOPS)
@@ -143,8 +205,6 @@ int main(int argc, char * argv[])
 #else
   std::string fnm("oops");
 #endif
-  int rnk = -1;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rnk);
   int per_rnk_offset = sizeof(unsigned long long) * 2;
   int lcl_offset = rnk * per_rnk_offset;
   MPI_Datatype out_tp;
@@ -160,6 +220,16 @@ int main(int argc, char * argv[])
     MPI_File_write(fout,&span[0],1,out_tp,&sts);
 #endif
   MPI_File_close(&fout);
+  */
+#ifdef TEST_SINGLE
+  //std::cout << CLOCKS_PER_SEC << ", " << inst[0] << ", " << inst[1] << ", " << (double)(inst[1] - inst[0]) / (double)CLOCKS_PER_SEC << std::endl;
+  std::cout << "Single API call took " << (t4-t3) << " seconds." << std::endl;
+#else
+  //std::cout << CLOCKS_PER_SEC << ", " << span[0] << ", " << span[1] << ", " << (double)(span[1] - span[0]) / (double)CLOCKS_PER_SEC << std::endl;
+  std::cout << "FEM assembly took " << (t2-t1) << " seconds." << std::endl;
+#endif
   PetscFinalize();
+  gmi_sim_stop();
+  PCU_Comm_Free();
   MPI_Finalize();
 }

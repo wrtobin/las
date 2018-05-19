@@ -6,9 +6,8 @@ CUDA_PATH=$DEVROOT/install/cuda/9.1/ \
   -DCMAKE_CXX_COMPILER=`which mpicxx` \
   -DCMAKE_Fortran_COMPILER=`which mpif90` \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-  -DSCOREC_LIB_DIR=$DEVROOT/install/core/lib \
-  -DSCOREC_INCLUDE_DIR=$DEVROOT/install/core/include \
-  -DCMAKE_BUILD_TYPE=Release \
+  -DSCOREC_DIR=$DEVROOT/install/core/lib/cmake/SCOREC/ \
+  -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_INSTALL_PREFIX="$PREFIX" \
   -DPETSC_DIR=$PETSC_DIR \
   -DPETSC_ARCH=$PETSC_ARCH \
@@ -18,3 +17,7 @@ CUDA_PATH=$DEVROOT/install/cuda/9.1/ \
 
 #  -DCUDA_TOOLKIT_ROOT_DIR=$DEVROOT/install/cuda/9.1/bin \
 #  -DCUDA_CUDART_LIBRARY=$DEVROOT/install/cuda/9.1/lib64/libcudart_static.a
+
+#  -DENABLE_SIMMETRIX=TRUE \
+#  -DSCOREC_LIB_DIR=$DEVROOT/install/core/lib \
+#  -DSCOREC_INCLUDE_DIR=$DEVROOT/install/core/include \
