@@ -175,7 +175,8 @@ int main(int argc, char * argv[])
 #elif defined(TEST_CVIRT)
     (*petsc_cops->add)(K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #elif defined(TEST_VIRTUAL)
-    petsc_ops->add(las_K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
+#else 
+    asm("nop");
 #endif
 #ifdef TEST_SINGLE
     //inst[1] = rdtsc();
@@ -211,7 +212,9 @@ int main(int argc, char * argv[])
   MPI_Type_contiguous(2,MPI_UNSIGNED_LONG_LONG,&out_tp);
   MPI_Type_commit(&out_tp);
   MPI_File fout;
-  MPI_File_open(PETSC_COMM_WORLD,fnm.c_str(),MPI_MODE_CREATE|MPI_MODE_WRONLY,MPI_INFO_NULL,&fout);
+  void * hax = (void*)fnm.c_str();
+  char * filename = (char*)hax;
+  MPI_File_open(PETSC_COMM_WORLD,filename,MPI_MODE_CREATE|MPI_MODE_WRONLY,MPI_INFO_NULL,&fout);
   MPI_File_set_view(fout,lcl_offset,MPI_UNSIGNED_LONG_LONG,out_tp,"native",MPI_INFO_NULL);
   MPI_Status sts;
 #ifdef TEST_SINGLE

@@ -1,6 +1,6 @@
 PREFIX=$DEVROOT/install/las
-CUDA_INC_PATH=$DEVROOT/install/cuda/9.1/include \
-CUDA_PATH=$DEVROOT/install/cuda/9.1/ \
+#CUDA_INC_PATH=$DEVROOT/install/cuda/9.1/include \
+#CUDA_PATH=$DEVROOT/install/cuda/9.1/ \
   cmake .. \
   -DCMAKE_C_COMPILER=`which mpicc` \
   -DCMAKE_CXX_COMPILER=`which mpicxx` \
@@ -11,7 +11,7 @@ CUDA_PATH=$DEVROOT/install/cuda/9.1/ \
   -DCMAKE_INSTALL_PREFIX="$PREFIX" \
   -DPETSC_DIR=$PETSC_DIR \
   -DPETSC_ARCH=$PETSC_ARCH \
-  -DBUILD_SPARSKIT=ON \
+  -DBUILD_SPARSKIT=OFF \
   -DWITH_KOKKOS=FALSE \
   -DTEST_FLAGS="-DTEST_RAW"
 

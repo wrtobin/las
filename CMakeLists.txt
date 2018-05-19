@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR) # version 3.8 adds cuda as a language, 3.9 has better VS integration
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR) # version 3.8 adds cuda as a language, 3.9 has better VS integration
 project(las)
 set(LAS_MAJOR_VERSION 0)
 set(LAS_MINOR_VERSION 1)
@@ -15,7 +15,7 @@ message(STATUS "Configuring to build on: ${HOST}")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".so")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 if(${BUILD_SHARED_LIBS})
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 endif()
@@ -32,7 +32,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Cray")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
   # todo :  check for regular xl vs bg/q xl compiler
   #         currently assuming bg/q
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qflag=w -glanglvl=extended0x")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qlanglvl=extended0x -O3 -qhot=level=0 -qsimd=auto -qmaxmem=-1 -qstrict -qstrict_induction -qreport")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # todo :  set intel-specific cxx flags
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

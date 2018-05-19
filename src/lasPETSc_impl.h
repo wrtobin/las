@@ -23,11 +23,11 @@ namespace las
   }
   LAS_INLINE ::Mat * getPetscMat(las::Mat * m)
   {
-    return reinterpret_cast<::Mat*>(m);
+    return reinterpret_cast< ::Mat* >(m);
   }
   LAS_INLINE ::Vec * getPetscVec(las::Vec * v)
   {
-    return reinterpret_cast<::Vec*>(v);
+    return reinterpret_cast< ::Vec* >(v);
   }
   class petsc : public LasOps<petsc>
   {
@@ -356,7 +356,7 @@ namespace las
     {
       ::Mat * pa = getPetscMat(a);
       ::Mat * pb = getPetscMat(b);
-      ::Mat ** pc = reinterpret_cast<::Mat**>(c);
+      ::Mat ** pc = reinterpret_cast< ::Mat** >(c);
       if(pa != pa_p || pb != pb_p || *pc != pc_p) // may want to switch to actual equality instead of pointer equality...?
       {
         ::MatMatMult(*pa,*pb,MAT_INITIAL_MATRIX,PETSC_DEFAULT,*pc);

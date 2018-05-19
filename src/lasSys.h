@@ -3,4 +3,5 @@
 // library-wide typedefs and macros
 typedef double scalar;
 #define LAS_IGNORE NULL
+#define nullptr NULL
 #endif

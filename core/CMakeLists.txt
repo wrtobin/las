@@ -26,7 +26,7 @@ if(PETSC_FOUND)
 endif()
 
 add_library(las_core ${las_core_sources})
-target_compile_features(las PUBLIC cxx_std_11)
+#target_compile_features(las PUBLIC cxx_std_11)
 if(MPI_COMPILE_FLAGS)
   set_target_properties(las_core PROPERTIES COMPILE_FLAGS ${MPI_CXX_COMPILE_DEFINITIONS})
 endif()

@@ -14,7 +14,7 @@ int main(int ac, char * av[])
                    4.0, 4.0, 4.0,};
   las::LasCreateMat * dns_fct = las::getMatBuilder<las::dense>(0);
   las::Mat * dns_mat = dns_fct->create(0, 0, las::createDensity(nr, nc, darr), MPI_COMM_SELF);
-  auto * dns_ops = las::getLASOps<las::dense>();
+  las::LasOps<las::dense> * dns_ops = las::getLASOps<las::dense>();
   std::vector <int> rws(nc, 0);
   std::vector <int> cls(nr, 0);
   for(int rw = 0; rw < nr; ++rw)

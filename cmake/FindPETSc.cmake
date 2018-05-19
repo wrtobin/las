@@ -1,8 +1,12 @@
-find_package(PkgConfig)
+find_package(PkgConfig REQUIRED)
 
 if(PKGCONFIG_FOUND)
-  list(APPEND CMAKE_PREFIX_PATH "${PETSC_DIR}/${PETSC_ARCH}")
-  set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH true)
+  if(${CMAKE_VERSION} VERSION_LESS "3.1.0")
+    set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig/")
+  else()
+    list(APPEND CMAKE_PREFIX_PATH "${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig/")
+    set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH true)
+  endif()
 
   if(PETSC_FIND_REQUIRED)
     set(_PETSC_OPTS "REQUIRED")
