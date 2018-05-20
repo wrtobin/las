@@ -8,6 +8,7 @@
 #include <apfMDS.h>
 #include <apfNumbering.h>
 #include <apfShape.h>
+#include <gmi_null.h>
 #include <gmi_sim.h>
 #include <PCU.h>
 #include <cassert>
@@ -15,21 +16,25 @@
 #include <string>
 int main(int argc, char * argv[])
 {
-  assert(argc == 3);
+  assert(argc == 2);
   MPI_Init(&argc,&argv);
   PCU_Comm_Init();
   gmi_sim_start();
   gmi_register_sim();
+  gmi_register_null();
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
+  std::cout << "library initialization complete" << std::endl;
   //PetscPopSignalHandler();
   int rnk = -1;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rnk);
-  apf::Mesh * msh = apf::loadMdsMesh(argv[1],argv[2]);
+  apf::Mesh * msh = apf::loadMdsMesh(".null",argv[1]);
+  std::cout << "mesh loaded" << std::endl;
   int lmt_dim = msh->getDimension();
   apf::Field * fld = apf::createLagrangeField(msh,"u",apf::VECTOR,1);
   apf::zeroField(fld);
   apf::FieldShape * shp = apf::getShape(fld);
   apf::Numbering * num = apf::createNumbering(msh,"u_num",shp,1); // only number the nodes
+  std::cout << "fields and numberings created" << std::endl;
   // number all the nodes
   apf::MeshIterator * it = nullptr;
   apf::MeshEntity * ent = nullptr;
@@ -56,6 +61,7 @@ int main(int argc, char * argv[])
   MPI_Exscan(&lcl_blks,&frst_lcl_blk,1,MPI_INTEGER,MPI_SUM,PETSC_COMM_WORLD);
   apf::setNumberingOffset(num,frst_lcl_blk);
   apf::synchronize(num); // number ghosts
+  std::cout << "field numbered" << std::endl;
   /*
   apf::writeVtkFiles("cube_num",msh);
   int own_vrts = apf::countOwned(msh,0);
@@ -117,6 +123,7 @@ int main(int argc, char * argv[])
     }
   }
   msh->end(it);
+  std::cout << "nonzero matrix structure built" << std::endl;
   int blk_sz = apf::countComponents(fld);
   int lcl_dof_cnt = blk_sz * lcl_blks;
   Mat K;
@@ -127,6 +134,7 @@ int main(int argc, char * argv[])
   msh->end(it);
   MatMPIBAIJSetPreallocation(K,blk_sz,0,&dnnz[0],0,&onnz[0]);
   MatSetOption(K,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);
+  std::cout << "matrix created" << std::endl;
   it = msh->begin(lmt_dim); // assuming all elements of the same type
   ent = msh->iterate(it);
   apf::MeshElement * msh_lmt = apf::createMeshElement(msh,ent);
@@ -150,6 +158,7 @@ int main(int argc, char * argv[])
   ops * petsc_ops = createPetscOps();
 #endif
   MatZeroEntries(K); // collective on petsc_comm_world
+  std::cout << "matrix zero'd, entering assembly loop" << std::endl;
 #ifdef TEST_SINGLE
   //unsigned long long inst[2] = {0,0};
   double t3 = 0.0;
@@ -189,6 +198,7 @@ int main(int argc, char * argv[])
   //span[1] = rdtsc();
   double t2 = PCU_Time();
 #endif
+  std::cout << "assembly loop complete, commencing parallel assembly" << std::endl;
   MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);
   //MatDestroy(&K);
@@ -235,4 +245,6 @@ int main(int argc, char * argv[])
   gmi_sim_stop();
   PCU_Comm_Free();
   MPI_Finalize();
+  std::cout << "deinitialization complete" << std::endl;
+  return 0;
 }

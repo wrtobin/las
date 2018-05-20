@@ -32,7 +32,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Cray")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
   # todo :  check for regular xl vs bg/q xl compiler
   #         currently assuming bg/q
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qlanglvl=extended0x -O3 -qhot=level=0 -qsimd=auto -qmaxmem=-1 -qstrict -qstrict_induction -qreport")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qlanglvl=extended0x -O5 -qhot=level=0 -qsimd=auto -qmaxmem=-1 -qstrict -qstrict_induction -qreport")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # todo :  set intel-specific cxx flags
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
