@@ -9,7 +9,6 @@
 #include <apfNumbering.h>
 #include <apfShape.h>
 #include <gmi_null.h>
-#include <gmi_sim.h>
 #include <PCU.h>
 #include <cassert>
 #include <iostream>
@@ -19,8 +18,6 @@ int main(int argc, char * argv[])
   assert(argc == 2);
   MPI_Init(&argc,&argv);
   PCU_Comm_Init();
-  gmi_sim_start();
-  gmi_register_sim();
   gmi_register_null();
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
   std::cout << "library initialization complete" << std::endl;
@@ -31,6 +28,7 @@ int main(int argc, char * argv[])
   std::cout << "mesh loaded" << std::endl;
   int lmt_dim = msh->getDimension();
   apf::Field * fld = apf::createLagrangeField(msh,"u",apf::VECTOR,1);
+  int blk_sz = apf::countComponents(fld);
   apf::zeroField(fld);
   apf::FieldShape * shp = apf::getShape(fld);
   apf::Numbering * num = apf::createNumbering(msh,"u_num",shp,1); // only number the nodes
@@ -57,83 +55,87 @@ int main(int argc, char * argv[])
       msh->end(it);
     }
   }
+  std::cout << "local numberings generated" << std::endl;
   int frst_lcl_blk = 0;
   MPI_Exscan(&lcl_blks,&frst_lcl_blk,1,MPI_INTEGER,MPI_SUM,PETSC_COMM_WORLD);
-  apf::setNumberingOffset(num,frst_lcl_blk);
-  apf::synchronize(num); // number ghosts
-  std::cout << "field numbered" << std::endl;
-  /*
-  apf::writeVtkFiles("cube_num",msh);
-  int own_vrts = apf::countOwned(msh,0);
-  std::cout << "[" << rnk << "] : owns " << own_vrts << " vtx" << std::endl;
-  it = msh->begin(0);
-  while((ent = msh->iterate(it))) // only vertices hold nodes
-    if(!msh->isOwned(ent))
-    {
-      apf::Copies gsts;
-      msh->getRemotes(ent,gsts);
-      int gst_cnt = gsts.size();
-      std::cout << "[" << rnk << "] : gst vtx with " << gst_cnt << " gsts" << std::endl;
-    }
-  msh->end(it);
-  // report ownership infor for debugging
-  it = msh->begin(0);
-  while((ent = msh->iterate(it))) // only vertices hold nodes
-    if(msh->isOwned(ent))
-    {
-      int ent_tp = msh->getType(ent);
-      int tp_nds = shp->countNodesOn(ent_tp);
-      int blk_id = -1;
-      for(int nd = 0; nd < tp_nds; ++nd) // assuming 1 component / blocks
-      {
-        apf::getNumber(num,ent,nd,blk_id);
-        std::cout << "[" << rnk << "] : owns vtx with node " << blk_id << std::endl;
-      }
-    }
-  msh->end(it);
-  */
+  apf::setNumberingOffset(num,frst_lcl_blk); // add # to all owned nodes
+  apf::synchronize(num); // get ghost node #s from owners
+  std::cout << "field offset and synchronization complete" << std::endl;
+  //apf::writeVtkFiles("cube_num",msh);
   // build nonzero structure of the matrix
   std::vector<int> dnnz(lcl_blks,0);
   std::vector<int> onnz(lcl_blks,0);
   apf::Adjacent adj;
+  PCU_Comm_Begin();
   it = msh->begin(0);
   while((ent = msh->iterate(it))) // only vertices hold nodes
   {
+    int blk_id = apf::getNumber(num,ent,0,0);
+    int adj_cnts[2] = { 0, 0 };
+    apf::getBridgeAdjacent(msh,ent,lmt_dim,0,adj);
+    for(size_t ii = 0; ii < adj.getSize(); ++ii)
+      adj_cnts[msh->isOwned(adj[ii])]++;
+    int & adj_own = adj_cnts[1];
+    int & adj_gst = adj_cnts[0];
     if(msh->isOwned(ent))
     {
-      //assuming 1 node per vert
-      int blk_id = apf::getNumber(num,ent,0,0);
-      int adj_id = -1;
-      apf::getBridgeAdjacent(msh,ent,lmt_dim,0,adj);
-      for(size_t ii = 0; ii < adj.getSize(); ++ii)
+      // assuming 1 node per vtx
+      int lcl_blk_id = blk_id - frst_lcl_blk;
+      dnnz[lcl_blk_id] += adj_own + 1; // adj plus diag blk
+      onnz[lcl_blk_id] += adj_gst;
+    }
+    else
+    {
+      int gst_dnnz = 0;
+      int ownr = msh->getOwner(ent);
+      for(size_t vrt = 0; vrt < adj.getSize(); ++vrt)
       {
-        adj_id = apf::getNumber(num,adj[ii],0,0);
-        //std::cout << "[" << rnk << "] : owns " << blk_id;
-        if(msh->isOwned(adj[ii]))
+        int adj_ownr = msh->getOwner(adj[vrt]);
+        // if the adj ghost node is also owned by the same ownr as the primary nd being looped over
+        if(adj_ownr == ownr)
         {
-          dnnz[blk_id]++;
-          //std::cout << " adj to ownd " << adj_id << std::endl;
-        }
-        else
-        {
-          onnz[blk_id]++;
-          //std::cout << " adj to ghst " << adj_id << std::endl;
+          apf::Adjacent edg_frm_frst;
+          apf::Adjacent edg_frm_scnd;
+          msh->getAdjacent(ent,1,edg_frm_frst);
+          msh->getAdjacent(adj[vrt],1,edg_frm_scnd);
+          for(size_t e1 = 0; e1 < edg_frm_frst.getSize(); ++e1)
+            for(size_t e2 = 0; e2 < edg_frm_scnd.getSize(); ++e2)
+              if(edg_frm_frst[e1] == edg_frm_scnd[e2])
+                if(msh->isOwned(edg_frm_frst[e1]))
+                   gst_dnnz++;
         }
       }
+      int adj_lcl = adj_own + adj_gst - gst_dnnz;
+      PCU_COMM_PACK(ownr,blk_id);
+      PCU_COMM_PACK(ownr,gst_dnnz);
+      PCU_COMM_PACK(ownr,adj_lcl);
     }
+  }
+  PCU_Comm_Send();
+  while(PCU_Comm_Receive())
+  {
+    int blk_id = -1;
+    int num_dnnz = 0;
+    int num_onnz = 0;
+    PCU_COMM_UNPACK(blk_id);
+    PCU_COMM_UNPACK(num_dnnz);
+    PCU_COMM_UNPACK(num_onnz);
+    // this is valid becuase the blk_id is related to an OWNED node
+    int lcl_blk_id = blk_id - frst_lcl_blk;
+    dnnz[lcl_blk_id] += num_dnnz;
+    onnz[lcl_blk_id] += num_onnz;
   }
   msh->end(it);
   std::cout << "nonzero matrix structure built" << std::endl;
-  int blk_sz = apf::countComponents(fld);
   int lcl_dof_cnt = blk_sz * lcl_blks;
   Mat K;
   MatCreate(PETSC_COMM_WORLD,&K);
   MatSetType(K,MATMPIBAIJ);
   MatSetSizes(K,lcl_dof_cnt,lcl_dof_cnt,PETSC_DETERMINE,PETSC_DETERMINE);
   MatSetBlockSize(K,blk_sz);
-  msh->end(it);
   MatMPIBAIJSetPreallocation(K,blk_sz,0,&dnnz[0],0,&onnz[0]);
   MatSetOption(K,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);
+  MatSetUp(K);
   std::cout << "matrix created" << std::endl;
   it = msh->begin(lmt_dim); // assuming all elements of the same type
   ent = msh->iterate(it);
@@ -165,7 +167,7 @@ int main(int argc, char * argv[])
   double t4 = 0.0;
 #else
   //unsigned long long span[2] = {0,0};
-    double t1 = PCU_Time();
+  double t1 = PCU_Time();
 #endif
   //span[0] = rdtsc();
   while((ent = msh->iterate(it)))
@@ -184,7 +186,8 @@ int main(int argc, char * argv[])
 #elif defined(TEST_CVIRT)
     (*petsc_cops->add)(K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
 #elif defined(TEST_VIRTUAL)
-#else 
+    petsc_ops->add(las_K,nds_per_lmt,&nums[0],nds_per_lmt,&nums[0],&ke[0]);
+#else
     asm("nop");
 #endif
 #ifdef TEST_SINGLE
@@ -238,11 +241,11 @@ int main(int argc, char * argv[])
   //std::cout << CLOCKS_PER_SEC << ", " << inst[0] << ", " << inst[1] << ", " << (double)(inst[1] - inst[0]) / (double)CLOCKS_PER_SEC << std::endl;
   std::cout << "Single API call took " << (t4-t3) << " seconds." << std::endl;
 #else
+  int lmt_cnt = apf::countOwned(msh,lmt_dim);
   //std::cout << CLOCKS_PER_SEC << ", " << span[0] << ", " << span[1] << ", " << (double)(span[1] - span[0]) / (double)CLOCKS_PER_SEC << std::endl;
-  std::cout << "FEM assembly took " << (t2-t1) << " seconds." << std::endl;
+  std::cout << "[" << rnk << "] : FEM assembly took " << (t2-t1) << " seconds for " << lmt_cnt << " elements." << std::endl;
 #endif
   PetscFinalize();
-  gmi_sim_stop();
   PCU_Comm_Free();
   MPI_Finalize();
   std::cout << "deinitialization complete" << std::endl;

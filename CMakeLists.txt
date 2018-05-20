@@ -15,7 +15,12 @@ message(STATUS "Configuring to build on: ${HOST}")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+if("${HOST}" STREQUAL "q.ccni.rpi.edu")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+else()
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".so")
+endif()
+
 if(${BUILD_SHARED_LIBS})
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 endif()
@@ -103,8 +108,6 @@ endif()
 
 message(STATUS "Configuring las")
 add_subdirectory(src)
-message(STATUS "Configuring tests")
-add_subdirectory(test)
 
 find_package(PETSc) # may influence scorec dependencies (remove eventually)
 find_package(SCOREC)
@@ -112,3 +115,6 @@ if(SCOREC_FOUND)
   message(STATUS "Configure SCOREC/core integration")
   add_subdirectory(core)
 endif()
+
+message(STATUS "Configuring tests")
+add_subdirectory(test)

@@ -1,3 +1,4 @@
+#!/bin/bash -x
 PREFIX=$DEVROOT/install/las
 #CUDA_INC_PATH=$DEVROOT/install/cuda/9.1/include \
 #CUDA_PATH=$DEVROOT/install/cuda/9.1/ \
@@ -12,8 +13,7 @@ PREFIX=$DEVROOT/install/las
   -DPETSC_DIR=$PETSC_DIR \
   -DPETSC_ARCH=$PETSC_ARCH \
   -DBUILD_SPARSKIT=OFF \
-  -DWITH_KOKKOS=FALSE \
-  -DTEST_FLAGS="-DTEST_RAW"
+  -DWITH_KOKKOS=FALSE
 
 #  -DCUDA_TOOLKIT_ROOT_DIR=$DEVROOT/install/cuda/9.1/bin \
 #  -DCUDA_CUDART_LIBRARY=$DEVROOT/install/cuda/9.1/lib64/libcudart_static.a
