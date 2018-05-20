@@ -40,7 +40,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qlanglvl=extended0x -O5 -qhot=level=0 -qsimd=auto -qmaxmem=-1 -qstrict -qstrict_induction -qreport")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # todo :  set intel-specific cxx flags
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # todo :  version checks to see which c++ standards are available
   #         and warn/error if the version is incompatible
