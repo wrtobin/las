@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR) # version 3.8 adds cuda as a language, 3.9 has better VS integration
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR) # version 3.8 adds cuda as a language, 3.9 has better VS integration
 project(las)
 set(LAS_MAJOR_VERSION 0)
 set(LAS_MINOR_VERSION 1)
-set(LAS_PATCH_VERSION 19)
+set(LAS_PATCH_VERSION 22)
 set(LAS_VERSION ${LAS_MAJOR_VERSION}.${LAS_MINOR_VERSION}.${LAS_PATCH_VERSION})
 enable_language(CXX)
 enable_language(C)
@@ -15,7 +15,12 @@ message(STATUS "Configuring to build on: ${HOST}")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".so")
+if("${HOST}" STREQUAL "q.ccni.rpi.edu")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+else()
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".so")
+endif()
+
 if(${BUILD_SHARED_LIBS})
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 endif()
@@ -32,10 +37,10 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Cray")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
   # todo :  check for regular xl vs bg/q xl compiler
   #         currently assuming bg/q
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qflag=w -glanglvl=extended0x")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qlanglvl=extended0x -O5 -qhot=level=0 -qsimd=auto -qmaxmem=-1 -qstrict -qstrict_induction -qreport")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # todo :  set intel-specific cxx flags
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # todo :  version checks to see which c++ standards are available
   #         and warn/error if the version is incompatible
@@ -103,12 +108,13 @@ endif()
 
 message(STATUS "Configuring las")
 add_subdirectory(src)
-message(STATUS "Configuring tests")
-add_subdirectory(test)
 
 find_package(PETSc) # may influence scorec dependencies (remove eventually)
-find_package(Scorec)
+find_package(SCOREC)
 if(SCOREC_FOUND)
   message(STATUS "Configure SCOREC/core integration")
   add_subdirectory(core)
 endif()
+
+message(STATUS "Configuring tests")
+add_subdirectory(test)
