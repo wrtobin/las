@@ -164,4 +164,4 @@ write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/las/lasConfigVersi
   VERSION ${LAS_VERSION} COMPATIBILITY AnyNewerVersion)
 
 #configure_file(${PROJECT_SOURCE_DIR}/cmake/lasConfig.cmake "${CMAKE_CURRENT_BINARY_DIR}/las/lasConfig.cmake" @ONLY)
-install(EXPORT lasConfig DESTINATION lib/las)
+install(EXPORT lasConfig DESTINATION lib/cmake)
