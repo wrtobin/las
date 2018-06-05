@@ -22,32 +22,38 @@ namespace las
   {
   protected:
     SparskitBuffers * bfrs;
+    double eps;
     friend class SparskitQuickLU;
   public:
-    SparskitLU(SparskitBuffers * b) : bfrs(b) {}
+    SparskitLU(SparskitBuffers * b, double e) : bfrs(b), eps(e) {}
+    SparskitLU(SparskitLU * s, double e) : bfrs(s->bfrs), eps(e) {}
     virtual void solve(Mat * k, Vec * u, Vec * f);
   };
   // only perform the solve, do not decompose the matrix
   class SparskitQuickLU : public SparskitLU
   {
   public:
-    SparskitQuickLU(SparskitBuffers * b) : SparskitLU(b) {}
-    SparskitQuickLU(SparskitLU * lu) : SparskitLU(lu->bfrs) {}
+    SparskitQuickLU(SparskitBuffers * b, double e) : SparskitLU(b,e) {}
+    SparskitQuickLU(SparskitLU * lu, double e) : SparskitLU(lu->bfrs,e) {}
     // the matrix k must have a csr format identical to that used previously in a normal SparskitLU solve
     virtual void solve(Mat * k, Vec * u, Vec * f);
   };
-  LAS_INLINE Solve * createSparskitLUSolve(SparskitBuffers * b)
+  LAS_INLINE Solve * createSparskitLUSolve(SparskitBuffers * b, double eps)
   {
-    return new SparskitLU(b);
+    return new SparskitLU(b,eps);
   }
-  LAS_INLINE Solve * createSparskitQuickLUSolve(SparskitBuffers * b)
+  LAS_INLINE Solve * createSparskitLUSolve(Solve * slv, double eps)
   {
-    return new SparskitQuickLU(b);
+    return new SparskitLU(reinterpret_cast<SparskitLU*>(slv),eps);
   }
-  LAS_INLINE Solve * createSparskitQuickLUSolve(Solve * slv)
+  LAS_INLINE Solve * createSparskitQuickLUSolve(SparskitBuffers * b, double eps)
+  {
+    return new SparskitQuickLU(b,eps);
+  }
+  LAS_INLINE Solve * createSparskitQuickLUSolve(Solve * slv, double eps)
   {
     SparskitLU * skt_slv = reinterpret_cast<SparskitLU*>(slv);
-    return new SparskitQuickLU(skt_slv);
+    return new SparskitQuickLU(skt_slv,eps);
   }
   LAS_INLINE void printSparskitMat(std::ostream & o, Mat * mi)
   {
@@ -80,8 +86,7 @@ namespace las
   }
   LAS_INLINE void SparskitLU::solve(Mat * k, Vec * u, Vec * f)
   {
-    bfrs->zero();
-    double tol = 1e-6;
+    //DBG(bfrs->zero());
     skMat * mat = getSparskitMatrix(k);
     skVec * uv = getSparskitVector(u);
     skVec * fv = getSparskitVector(f);
@@ -94,7 +99,7 @@ namespace las
           csr->getCols(),
           csr->getRows(),
           &ndofs,
-          &tol,
+          &eps,
           bfrs->matrixBuffer(),
           bfrs->colsBuffer(),
           bfrs->rowsBuffer(),

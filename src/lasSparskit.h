@@ -16,9 +16,10 @@ namespace las
    * @note Sparskit is a single-precision solver, so don't use this for anything nonlinear where you're
    *  trying to converge past 10e-8
    */
-  Solve * createSparskitLUSolve(SparskitBuffers * b);
-  Solve * createSparskitQuickLUSolve(SparskitBuffers * b);
-  Solve * createSparskitQuickLUSolve(Solve * slvr);
+  Solve * createSparskitLUSolve(SparskitBuffers * b, double eps = 0.0);
+  Solve * createSpaskitLUSolve(Solve * slvr, double eps = 0.0);
+  Solve * createSparskitQuickLUSolve(SparskitBuffers * b, double eps = 0.0);
+  Solve * createSparskitQuickLUSolve(Solve * slvr, double eps = 0.0);
   void printSparskitMat(std::ostream &, Mat * m);
   double getSparskitMatValue(Mat *, int rr, int cc);
   void setSparskitMatValue(Mat *, int rr, int cc, double vl);
