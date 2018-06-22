@@ -38,6 +38,8 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
   # todo :  check for regular xl vs bg/q xl compiler
   #         currently assuming bg/q
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qlanglvl=extended0x -O5 -qhot=level=0 -qsimd=auto -qmaxmem=-1 -qstrict -qstrict_induction -qreport")
+  # these definitions are BGQ specific, but for now the only place we use XL compiler is on BGQ
+  add_definitions(-DBGQ)
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # todo :  set intel-specific cxx flags
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -116,5 +118,7 @@ if(SCOREC_FOUND)
   add_subdirectory(core)
 endif()
 
-message(STATUS "Configuring tests")
-add_subdirectory(test)
+if(BUILD_TESTS)
+  message(STATUS "Configuring tests")
+  add_subdirectory(test)
+endif(BUILD_TESTS)
