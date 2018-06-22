@@ -8,7 +8,8 @@
 #elif defined(__xlc__)
 #define LAS_INLINE __attribute__((always_inline))
 #elif defined(__GNUC__) || defined(__GNUG__)
-#define LAS_INLINE __attribute__((always_inline))
+#define LAS_INLINE inline
+//__attribute__((always_inline))
 #else
 #define LAS_INLINE inline
 #endif
