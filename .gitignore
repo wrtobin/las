@@ -6,3 +6,5 @@
 /CppProperties.json
 /CMakeSettings.json
 build/
+src/lasComm.h
+src/lasConfig.h
