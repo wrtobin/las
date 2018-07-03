@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR) # version 3.8 adds cuda as a lan
 project(las)
 set(LAS_MAJOR_VERSION 0)
 set(LAS_MINOR_VERSION 1)
-set(LAS_PATCH_VERSION 23)
+set(LAS_PATCH_VERSION 24)
 set(LAS_VERSION ${LAS_MAJOR_VERSION}.${LAS_MINOR_VERSION}.${LAS_PATCH_VERSION})
 enable_language(CXX)
 enable_language(C)
@@ -31,6 +31,7 @@ set(ConfigPackageLocation lib/cmake/las)
 
 # c++11 support now happens through target_compile_features() per-target
 # add C++ compiler flags
+message(STATUS "Using the ${CMAKE_CXX_COMPILER_ID} compiler")
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Cray")
   # todo :  set cray-specific cxx flags
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -72,6 +73,9 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   #         and warn/error if the version is incompatible
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 endif()
+
+message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_C_FLAGS}")
 
 # add Fortran compiler flags
 if(${BUILD_SPARSKIT})
