@@ -10,10 +10,13 @@ namespace las
    *  functions, etc.
    *  TODO: build these from SCOREC/core data structures (mesh/field/numbering)
    */
+  template <typename T>
   struct NNZ
   {
-    std::vector<int> dnnz;
-    std::vector<int> onnz;
+    std::vector<T> dnnz;
+    std::vector<T> onnz;
+    T frst;
+    T lstp;
   };
 }
 #endif

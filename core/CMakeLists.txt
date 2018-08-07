@@ -1,9 +1,8 @@
 find_package(SCOREC REQUIRED)
 
-set(las_core_install lasCSRCore.h)
+set(las_core_install lasCore.h lasCoreSharing.h lasCSRCore.h)
 set(las_core_headers )
-set(las_core_sources lasCSRCore.cc)
-
+set(las_core_sources lasCore.cc lasCoreSharing.cc lasCSRCore.cc)
 find_package(MPI)
 if(MPI_FOUND)
   set(USE_MPI 1)

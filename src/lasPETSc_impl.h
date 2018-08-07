@@ -98,7 +98,7 @@ namespace las
   LAS_INLINE las::Mat * createPetscMatrix(unsigned l, unsigned bs = 1, Sparsity * sprs = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
   {
     bool have_sparsity = sprs != nullptr;
-    NNZ * nnz = have_sparsity ? reinterpret_cast<NNZ*>(sprs) : nullptr;
+    NNZ<int> * nnz = have_sparsity ? reinterpret_cast<NNZ<int>*>(sprs) : nullptr;
     const char * mat_tps[][2] = { {MATSEQAIJ, MATSEQBAIJ}, {MATMPIAIJ, MATMPIBAIJ} };
     bool is_par = cm != MPI_COMM_SELF;
     bool blk = bs > 1;
