@@ -205,6 +205,9 @@ namespace las
     virtual ~MatMatMult() {}
   };
   template <class T>
-  void destroySparsity(Sparsity * s);
+  void destroySparsity(Sparsity * s)
+  {
+    delete reinterpret_cast<T>(s);
+  }
 }
 #endif

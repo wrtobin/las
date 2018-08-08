@@ -13,9 +13,4 @@ namespace las
     DBG(std::cerr << "[LAS] : createLHS(Mat*) not implemented for configured backend" << std::endl);
     return nullptr;
   }
-  template <class T>
-  void destroySparsity(Sparsity * s)
-  {
-    delete reinterpret_cast<T>(s);
-  }
 }
