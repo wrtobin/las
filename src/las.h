@@ -204,5 +204,7 @@ namespace las
     virtual void exec(Mat * a, Mat * b, Mat ** c) = 0;
     virtual ~MatMatMult() {}
   };
+  template <class T>
+  void destroySparsity(Sparsity * s);
 }
 #endif
