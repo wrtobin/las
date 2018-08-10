@@ -6,10 +6,10 @@ namespace apf
   {
   public:
     AllSharing(Mesh * m);
-    virtual bool isOwned(MeshEntity * e) { return true; }
-    virtual int getOwner(MeshEntity * e) { return PCU_Comm_Self(); }
+    virtual bool isOwned(MeshEntity *) { return true; }
+    virtual int getOwner(MeshEntity *) { return PCU_Comm_Self(); }
     virtual void getCopies(MeshEntity *, CopyArray &) {};
-    virtual bool isShared(MeshEntity * e);
+    virtual bool isShared(MeshEntity *);
   protected:
     Mesh * msh;
   };
