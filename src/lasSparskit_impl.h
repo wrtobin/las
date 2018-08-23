@@ -55,17 +55,82 @@ namespace las
     SparskitLU * skt_slv = reinterpret_cast<SparskitLU*>(slv);
     return new SparskitQuickLU(skt_slv,eps);
   }
-  LAS_INLINE void printSparskitMat(std::ostream & o, Mat * mi)
+  LAS_INLINE void printSparskitMat(std::ostream & o,
+                                   Mat * mi,
+                                   PrintType tp,
+                                   bool symmetric)
   {
     skMat * m = getSparskitMatrix(mi);
-    int ndofs = m->getCSR()->getNumRows();
-    for(int rr = 0; rr < ndofs; ++rr)
+    if (tp == PrintType::full)
     {
-      for(int cc = 0; cc < ndofs; ++cc)
+      int ndofs = m->getCSR()->getNumRows();
+      for (int rr = 0; rr < ndofs; ++rr)
       {
-        o << (*m)(rr,cc) << ' ';
+        for (int cc = 0; cc < ndofs; ++cc)
+        {
+          o << (*m)(rr, cc) << ' ';
+        }
+        o << '\b' << std::endl;
       }
-      o << '\b' << std::endl;
+    }
+    else if (tp == PrintType::mmarket)
+    {
+      CSR * csr = m->getCSR();
+      double * vals = m->getVals();
+      int nnz = csr->getNumNonzero();
+      int numRows = csr->getNumRows();
+      int * rows = csr->getRows();
+      int * cols = csr->getCols();
+      if (symmetric)
+      {
+        // print the entries on or below the diagonal
+        o << "%%MatrixMarket matrix coordinate real symmetric\n";
+        int col;
+        double val;
+        int row = 1;
+        int col_idx = 0;
+        for (int i = 1; i < numRows + 1; ++i)
+        {
+          int numRowEntries = rows[i] - rows[i - 1];
+          for (int j = 0; j < numRowEntries; ++j)
+          {
+            assert(col_idx < nnz);
+            col = cols[col_idx];
+            if (row >= col)
+            {
+              val = vals[col_idx];
+              o << row << " " << col << " " << val << "\n";
+            }
+            ++col_idx;
+          }
+          ++row;
+        }
+      }
+      else
+      {
+        o << "%%MatrixMarket matrix coordinate real general\n";
+        int col;
+        double val;
+        int row = 1;
+        int col_idx = 0;
+        for (int i = 1; i < numRows + 1; ++i)
+        {
+          int numRowEntries = rows[i] - rows[i - 1];
+          for (int j = 0; j < numRowEntries; ++j)
+          {
+            assert(col_idx < nnz);
+            col = cols[col_idx];
+            val = vals[col_idx];
+            o << row << " " << col << " " << val << "\n";
+            ++col_idx;
+          }
+          ++row;
+        }
+      }
+    }
+    else
+    {
+      std::cerr << "Incorrect Matrix Print type. Skipping matrix printing\n";
     }
   }
   LAS_INLINE double getSparskitMatValue(Mat * k, int rr, int cc)

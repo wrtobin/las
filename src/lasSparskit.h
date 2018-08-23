@@ -5,6 +5,7 @@
 #include <ostream>
 namespace las
 {
+  enum class PrintType { full, mmarket };
   typedef sparse sparskit;
   template <>
   LasCreateMat * getMatBuilder<sparskit>(int id);
@@ -20,7 +21,10 @@ namespace las
   Solve * createSpaskitLUSolve(Solve * slvr, double eps = 0.0);
   Solve * createSparskitQuickLUSolve(SparskitBuffers * b, double eps = 0.0);
   Solve * createSparskitQuickLUSolve(Solve * slvr, double eps = 0.0);
-  void printSparskitMat(std::ostream &, Mat * m);
+  void printSparskitMat(std::ostream &,
+                        Mat * m,
+                        PrintType pt = PrintType::full,
+                        bool symmetric = false);
   double getSparskitMatValue(Mat *, int rr, int cc);
   void setSparskitMatValue(Mat *, int rr, int cc, double vl);
 }
