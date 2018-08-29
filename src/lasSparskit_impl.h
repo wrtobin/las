@@ -6,6 +6,8 @@
 #include "lasInline.h"
 #include <cassert>
 #include <iostream>
+#include <iomanip>
+#include <limits>
 namespace las
 {
   typedef csrMat skMat;
@@ -79,16 +81,21 @@ namespace las
       double * vals = m->getVals();
       int nnz = csr->getNumNonzero();
       int numRows = csr->getNumRows();
+      int numCols = csr->getNumCols();
       int * rows = csr->getRows();
       int * cols = csr->getCols();
       if (symmetric)
       {
         // print the entries on or below the diagonal
         o << "%%MatrixMarket matrix coordinate real symmetric\n";
+        o << "%\n";
         int col;
         double val;
         int row = 1;
         int col_idx = 0;
+        int sym_nnz=0;
+        // this is ugly and slow but we need to get the number of
+        // nonzero entries in the symmetric part.
         for (int i = 1; i < numRows + 1; ++i)
         {
           int numRowEntries = rows[i] - rows[i - 1];
@@ -99,7 +106,30 @@ namespace las
             if (row >= col)
             {
               val = vals[col_idx];
-              o << row << " " << col << " " << val << "\n";
+              if(fabs(val) > 1E-15)
+                ++sym_nnz;
+            }
+            ++col_idx;
+          }
+          ++row;
+        }
+        o << numRows << " " << numCols << " " << sym_nnz << "\n";
+        row=1;
+        col_idx=0;
+        for (int i = 1; i < numRows + 1; ++i)
+        {
+          int numRowEntries = rows[i] - rows[i - 1];
+          for (int j = 0; j < numRowEntries; ++j)
+          {
+            assert(col_idx < nnz);
+            col = cols[col_idx];
+            if (row >= col)
+            {
+              val = vals[col_idx];
+              if(fabs(val) > 1E-15)
+                o << row << " " << col << " " << std::scientific
+                  << std::setprecision(std::numeric_limits<double>::digits10 + 1)
+                  << val << "\n";
             }
             ++col_idx;
           }
@@ -109,6 +139,8 @@ namespace las
       else
       {
         o << "%%MatrixMarket matrix coordinate real general\n";
+        o << "%\n";
+        o << numRows << " " << numCols << " " << nnz << "\n";
         int col;
         double val;
         int row = 1;
@@ -121,7 +153,9 @@ namespace las
             assert(col_idx < nnz);
             col = cols[col_idx];
             val = vals[col_idx];
-            o << row << " " << col << " " << val << "\n";
+            o << row << " " << col << " " << std::scientific
+              << std::setprecision(std::numeric_limits<double>::digits10 + 1)
+              << val << "\n";
             ++col_idx;
           }
           ++row;
