@@ -27,6 +27,8 @@ namespace las
                         bool symmetric = false);
   double getSparskitMatValue(Mat *, int rr, int cc);
   void setSparskitMatValue(Mat *, int rr, int cc, double vl);
-}
+  Mat * readSparskitMat(std::istream & istream, PrintType pt = PrintType::full);
+  bool sparskitMatClose(Mat * m1, Mat * m2, double rtol=1E-15, double atol=1E-15);
+}  // namespace las
 #include "lasSparskit_impl.h"
 #endif
