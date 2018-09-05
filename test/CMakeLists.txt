@@ -17,7 +17,7 @@ function(add_mpi_test name file no_mpi_proc)
     SET(FLGS "${FLGS} ${GCC_COVERAGE_LINK_FLAGS}" )
     set_target_properties(${name} PROPERTIES LINK_FLAGS_DEBUG ${FLGS} )
   endif()
-  set(test_parameters -np ${no_mpi_proc} ${name} ${ARGN})
+  set(test_parameters -np ${no_mpi_proc} ${CMAKE_CURRENT_BINARY_DIR}/${name} ${ARGN})
   add_test(NAME ${name} COMMAND "mpirun" ${test_parameters} )
 endfunction(add_mpi_test)
 

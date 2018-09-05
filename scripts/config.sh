@@ -2,6 +2,8 @@
 PREFIX=/gpfs/u/scratch/PASC/shared/install/las
 #CUDA_INC_PATH=$DEVROOT/install/cuda/9.1/include \
 #CUDA_PATH=$DEVROOT/install/cuda/9.1/ \
+BUILD=Debug
+#BUILD=RelWithDebugInfo
 HOSTNAME=`hostname`
 if [ "$HOSTNAME" == "q.ccni.rpi.edu" ]; then
   cmake .. \
@@ -19,13 +21,13 @@ if [ "$HOSTNAME" == "q.ccni.rpi.edu" ]; then
   -DBUILD_TESTS=FALSE
 else
   cmake .. \
-  -DCMAKE_C_COMPILER=`which mpicc` \
-  -DCMAKE_CXX_COMPILER=`which mpicxx` \
-  -DCMAKE_Fortran_COMPILER=`which mpif77` \
+  -DCMAKE_BUILD_TYPE=$BUILD \
+  -DCMAKE_C_COMPILER=mpicc \
+  -DCMAKE_CXX_COMPILER=mpicxx \
+  -DCMAKE_Fortran_COMPILER=mpif77 \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-  -DSCOREC_DIR=$DEVROOT/install/core/lib/cmake/SCOREC/ \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=/gpfs/u/scratch/PASC/shared/install/las/  \
+  -DSCOREC_DIR=$DEVROOT/install/core/$BUILD/lib/cmake/SCOREC/ \
+  -DCMAKE_INSTALL_PREFIX=$DEVROOT/install/las/$BUILD  \
   -DPETSC_DIR="$PETSC_DIR" \
   -DPETSC_ARCH="$PETSC_ARCH" \
   -DBUILD_SPARSKIT=ON \
