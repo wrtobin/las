@@ -10,5 +10,5 @@ set(sparskit_source
   src/tql2.f
   src/tred2EISPACK.f
   src/utils.f )
-add_library(sparskit ${sparskit_source})
+add_library(sparskit STATIC ${sparskit_source})
 install(TARGETS sparskit EXPORT lasConfig DESTINATION lib)
