@@ -12,10 +12,11 @@ int main() {
     std::abort();
   }
   las::Mat * readMat = las::readSparskitMat(in, las::PrintType::mmarket);
+  in.close();
   skMat * m = getSparskitMatrix(readMat);
   las::CSR * csr = m->getCSR();
   int nnz = csr->getNumNonzero();
-  std::cout<<"nnz"<<nnz<<std::endl;
+  std::cout<<"nnz: "<<nnz<<std::endl;
   std::cout<<"num rows/cols"<<csr->getNumRows()<<" "<<csr->getNumCols()<<std::endl;
   int * rows = csr->getRows();
   int * cols = csr->getCols();
@@ -36,5 +37,7 @@ int main() {
   }
   std::cout<<std::endl;
   las::printSparskitMat(std::cout, readMat, las::PrintType::full, false);
-  in.close();
+  std::cout<<"print mmarket"<<std::endl;
+  las::printSparskitMat(std::cout, readMat, las::PrintType::mmarket, false);
+  std::cout<<"done"<<std::endl;
 }

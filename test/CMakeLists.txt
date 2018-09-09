@@ -40,6 +40,9 @@ target_link_libraries(sparse las)
 add_mpi_test(dense dense.cc 1)
 target_link_libraries(dense las)
 
+add_mpi_test(small_mtx test_small.cc 1)
+target_link_libraries(small_mtx las)
+
 if(CUDA_FOUND)
   message(STATUS "Adding CUDA test cases:")
   simple_test(cusparse cusparse.cc)

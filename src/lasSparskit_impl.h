@@ -275,11 +275,11 @@ namespace las
       ss >> numRows >> numCols >> nnz;
       break;
     }
+    std::streampos start = in.tellg();
     // get the position of the start of the data
     CSRBuilder csrBuilder(numRows, numCols);
     int row, col;
     double val;
-    int start = in.tellg();
     // reset nnz from the actual file so we account for symmetric matrix
     nnz = 0;
     // create sparsity pattern
@@ -303,6 +303,7 @@ namespace las
     }
     Sparsity * csr = csrBuilder.finalize();
     // go back to the start of the data
+    in.clear(); // not sure why this is needed..
     in.seekg(start);
     LasCreateMat * mb = getMatBuilder<sparskit>(0);
     Mat * mat = mb->create(nnz, LAS_IGNORE, csr, MPI_COMM_SELF);
@@ -313,13 +314,13 @@ namespace las
       std::stringstream ss(line);
       if (ss.peek() == '%') continue;
       readSparskitMatLine(ss, row, col, val);
-      setSparskitMatValue(mat, row, col, val);
+      setSparskitMatValue(mat, row-1, col-1, val);
       if (symmetric)
       {
         // add the terms below the diagonal to the sparsity pattern
         if (row > col)
         {
-          setSparskitMatValue(mat, col, row, val);
+          setSparskitMatValue(mat, col-1, row-1, val);
         }
       }
     }
