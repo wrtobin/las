@@ -175,10 +175,12 @@ namespace las
   LAS_INLINE void setSparskitMatValue(Mat * k, int rr, int cc, double vl)
   {
     skMat * m = getSparskitMatrix(k);
-    DBG(int ndofs = m->getCSR()->getNumRows());
-    assert(rr < ndofs && rr >= 0);
-    assert(cc < ndofs && cc >= 0);
-    (*m)(rr,cc) = vl;
+    //DBG(int ndofs = m->getCSR()->getNumRows());
+    assert(rr >= 0);
+    assert(cc >= 0);
+    if(rr<m->getCSR()->getNumRows() && 
+       cc < m->getCSR()->getNumCols())
+      (*m)(rr,cc) = vl;
   }
   LAS_INLINE void SparskitLU::solve(Mat * k, Vec * u, Vec * f)
   {
