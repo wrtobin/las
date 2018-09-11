@@ -59,6 +59,9 @@ namespace las
     SparskitLU * skt_slv = reinterpret_cast<SparskitLU*>(slv);
     return new SparskitQuickLU(skt_slv,eps);
   }
+  /* note for efficiency purposes when the symmetrix matrix market
+   * file is written to the standard output, the numver of nonzeros will be missing
+   */
   LAS_INLINE void printSparskitMat(std::ostream & o,
                                    Mat * mi,
                                    PrintType tp,
@@ -91,31 +94,16 @@ namespace las
         // print the entries on or below the diagonal
         o << "%%MatrixMarket matrix coordinate real symmetric\n";
         o << "%\n";
-        int col;
-        double val;
+        int col=0;
+        double val=0;
         int row = 1;
         int col_idx = 0;
         int sym_nnz=0;
-        // this is ugly and slow but we need to get the number of
-        // nonzero entries in the symmetric part.
-        for (int i = 1; i < numRows + 1; ++i)
-        {
-          int numRowEntries = rows[i] - rows[i - 1];
-          for (int j = 0; j < numRowEntries; ++j)
-          {
-            assert(col_idx < nnz);
-            col = cols[col_idx];
-            if (row >= col)
-            {
-              val = vals[col_idx];
-              if(fabs(val) > 1E-15)
-                ++sym_nnz;
-            }
-            ++col_idx;
-          }
-          ++row;
-        }
-        o << numRows << " " << numCols << " " << sym_nnz << "\n";
+        //o << numRows << " " << numCols << " " << sym_nnz << "\n";
+        o << numRows << " " << numCols << " ";
+        std::streampos start = o.tellp();
+        o.width(22); o.fill(' '); // give a buffer so we can fill the number of nonzero w/o issue
+        o <<"\n"; // this is so that if we print things to stdout it isn't completely broken
         row=1;
         col_idx=0;
         for (int i = 1; i < numRows + 1; ++i)
@@ -125,18 +113,24 @@ namespace las
           {
             assert(col_idx < nnz);
             col = cols[col_idx];
+            val = 0;
             if (row >= col)
             {
               val = vals[col_idx];
-              if(fabs(val) > 1E-15)
+              if(fabs(val) > 1E-15) {
                 o << row << " " << col << " " << std::scientific
                   << std::setprecision(std::numeric_limits<double>::digits10 + 1)
                   << val << "\n";
+                ++sym_nnz;
+              }
             }
             ++col_idx;
           }
           ++row;
         }
+        o.clear();
+        o.seekp(start);
+        o << sym_nnz;
       }
       else
       {
@@ -276,7 +270,6 @@ namespace las
       break;
     }
     std::streampos start = in.tellg();
-    // get the position of the start of the data
     CSRBuilder csrBuilder(numRows, numCols);
     int row, col;
     double val;
@@ -289,23 +282,31 @@ namespace las
       std::stringstream ss(line);
       if (ss.peek() == '%') continue;
       readSparskitMatLine(ss, row, col, val);
-      csrBuilder.add(row, col);
+      if (row < col && symmetric) {
+        std::cerr<<"Symmetric matrix market format is malformed.\n";
+        std::cerr<<"Values should only be on the lower left triangle.\nSkipping entry: ";
+        std::cerr<<"Row: "<<row<<" Col: "<<col<<" Value: "<<val<<"\n";
+        continue;
+      }
+      csrBuilder.add(row-1, col-1);
       ++nnz;
       if (symmetric)
       {
         // add the terms below the diagonal to the sparsity pattern
         if (row > col)
         {
-          csrBuilder.add(col, row);
+          csrBuilder.add(col-1, row-1);
           ++nnz;
         }
       }
     }
     Sparsity * csr = csrBuilder.finalize();
+    // since we read to EOF we need to reset the EOF flag
+    in.clear();
     // go back to the start of the data
-    in.clear(); // not sure why this is needed..
     in.seekg(start);
     LasCreateMat * mb = getMatBuilder<sparskit>(0);
+    assert(mb);
     Mat * mat = mb->create(nnz, LAS_IGNORE, csr, MPI_COMM_SELF);
     // read in values
     while (std::getline(in, line))
@@ -314,6 +315,9 @@ namespace las
       std::stringstream ss(line);
       if (ss.peek() == '%') continue;
       readSparskitMatLine(ss, row, col, val);
+      if (row < col && symmetric) {
+        continue;
+      }
       setSparskitMatValue(mat, row-1, col-1, val);
       if (symmetric)
       {

@@ -19,14 +19,24 @@ void amux_(int *n,double x[],double y[],double a[],int ja[],int ia[])
 #endif
 namespace las
 {
-  SparskitBuffers::SparskitBuffers(int num_dofs) :
-    heuristic_length(num_dofs * sqrt(num_dofs) * 100),
-    int_work_array(2*num_dofs),
-    rows(num_dofs),
-    cols(heuristic_length),
-    double_work_array(num_dofs),
-    matrix(heuristic_length)
-  { }
+  SparskitBuffers::SparskitBuffers(int num_dofs)
+      : heuristic_length(num_dofs * sqrt(num_dofs) * 100)
+      , int_work_array(2 * num_dofs)
+      , rows(num_dofs)
+      , cols(heuristic_length)
+      , double_work_array(num_dofs)
+      , matrix(heuristic_length)
+  {
+  }
+  SparskitBuffers::SparskitBuffers(int num_dofs, int num_nonzero)
+      : heuristic_length(num_nonzero)
+      , int_work_array(2 * num_dofs)
+      , rows(num_dofs)
+      , cols(heuristic_length)
+      , double_work_array(num_dofs)
+      , matrix(heuristic_length)
+  {
+  }
   void SparskitBuffers::zero()
   {
     int_work_array.assign(int_work_array.size(),0.0);
