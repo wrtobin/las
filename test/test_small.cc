@@ -59,7 +59,7 @@ int main()
   int rows_true[4] = {1, 3, 5, 6};
   int cols_true[5] = {1, 3, 2, 3, 3};
   double vals_true[5] = {1, 5, 3, 7, 6};
-  skMat * m = readAndPrint("/fasttmp/mersoj/develop/las/test/small.mtx");
+  skMat * m = readAndPrint("./small.mtx");
   las::CSR * csr = m->getCSR();
   int * rows = csr->getRows();
   int * cols = csr->getCols();
@@ -77,7 +77,7 @@ int main()
   int cols_true2[6] = {1, 3, 2, 1, 3, 4};
   double vals_true2[6] = {1, 5, 3, 5, 6, 1.23};
   skMat * m2 =
-      readAndPrint("/fasttmp/mersoj/develop/las/test/small_symm_matrix.mtx");
+      readAndPrint("./small_symm_matrix.mtx");
   csr = m2->getCSR();
   rows = csr->getRows();
   cols = csr->getCols();

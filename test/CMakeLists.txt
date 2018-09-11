@@ -42,6 +42,7 @@ target_link_libraries(dense las)
 
 add_mpi_test(small_mtx test_small.cc 1)
 target_link_libraries(small_mtx las)
+file(COPY small.mtx small_symm_matrix.mtx DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 if(CUDA_FOUND)
   message(STATUS "Adding CUDA test cases:")
