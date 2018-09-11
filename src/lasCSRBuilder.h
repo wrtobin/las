@@ -1,6 +1,7 @@
 #ifndef LAS_CSR_BUILDER_H_
 #define LAS_CSR_BUILDER_H_
 #include <vector>
+#include <utility>
 namespace las
 {
   class CSR;
@@ -13,10 +14,11 @@ namespace las
     int nnz;
     int rw_cnt;
     int cl_cnt;
+    std::vector<std::pair<int, int>> coords;
   public:
+    // note we set the size of cls when we finalize
     CSRBuilder(int num_rows, int num_cols)
       : rws(num_rows+1,1)
-      , cls(num_rows*num_cols,0)
       , nnz(0)
       , rw_cnt(num_rows)
       , cl_cnt(num_cols)

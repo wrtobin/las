@@ -4,7 +4,6 @@
 #include <iostream>
 namespace las
 {
-  template void destroySparsity<CSR*>(Sparsity*);
   void constructFullMatrix(CSR * csr, scalar * sprs_mat, scalar * fll_mat)
   {
     int neq = csr->getNumRows();

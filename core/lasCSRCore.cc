@@ -10,9 +10,6 @@ namespace las
     apf::MeshEntity * ment;
     int nedofs;
     int ndofs;
-    int nnz;
-    std::vector<int> rws;
-    std::vector<int> cls;
   public:
     CSRFromNumbering(apf::Numbering * n, int nd)
       : CSRBuilder(nd,nd)
@@ -20,13 +17,8 @@ namespace las
       , ment(NULL)
       , nedofs(0)
       , ndofs(nd)
-      , nnz(0)
-      , rws(ndofs+1)
-      , cls(ndofs*ndofs)
     {
       assert(nm);
-      rws.assign(ndofs+1,1);
-      cls.assign(ndofs*ndofs,0);
     }
     void run()
     {
