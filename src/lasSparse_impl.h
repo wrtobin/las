@@ -70,12 +70,12 @@ namespace las
   class csrMatBuilder : public LasCreateMat
   {
   public:
-    virtual ~csrMatBuilder() override {};
+    virtual ~csrMatBuilder() {};
     Mat * create(unsigned,unsigned,Sparsity * s, MPI_Comm)
     {
       return createCSRMatrix(s);
     }
-    virtual void destroy(Mat * m) override
+    virtual void destroy(Mat * m) 
     {
       destroyCSRMatrix(m);
     }
@@ -91,23 +91,23 @@ namespace las
   class csrVecBuilder : public LasCreateVec
   {
   public:
-    virtual ~csrVecBuilder() override {};
-    virtual Vec * create(unsigned lcl,unsigned,MPI_Comm) override
+    virtual ~csrVecBuilder() {};
+    virtual Vec * create(unsigned lcl,unsigned,MPI_Comm) 
     {
       return createVector(lcl);
     }
-    virtual void destroy(Vec * v) override
+    virtual void destroy(Vec * v) 
     {
       destroyVector(v);
     }
-    virtual Vec * createLHS(Mat * m) override
+    virtual Vec * createLHS(Mat * m) 
     {
       csrMat * cm = getCSRMat(m);
       CSR * csr = cm->getCSR();
       int cols = csr->getNumCols();
       return createVector(cols);
     }
-    virtual Vec * createRHS(Mat * m) override
+    virtual Vec * createRHS(Mat * m) 
     {
       csrMat * cm = getCSRMat(m);
       CSR * csr = cm->getCSR();
