@@ -189,9 +189,11 @@ namespace las
     skVec * uv = getSparskitVector(u);
     skVec * fv = getSparskitVector(f);
     CSR * csr = mat->getCSR();
-    int bfr_lng = bfrs->matrixLength();
+    int bfr_lng = 0;
     int ierr = 0;
     int ndofs = csr->getNumRows();
+    do {
+    bfr_lng = bfrs->matrixLength();
     ilut_(&ndofs,
           &(*mat)(0,0),
           csr->getCols(),
@@ -205,9 +207,36 @@ namespace las
           bfrs->doubleWorkBuffer(),
           bfrs->intWorkBuffer(),
           &ierr);
+      if(ierr == -2 || ierr == -3) {
+        // resizesparskit buffers
+        std::cerr<<"Initial buffer size too small resizing"<<std::endl;
+        bfrs->resizeMatrixBuffer(int(bfrs->matrixLength()*2.0));
+      }
+    } while(ierr == -2 || ierr == -3);
     if(ierr != 0)
     {
       std::cerr << "ERROR: ilut_ returned error code " << ierr << std::endl;
+      switch(ierr) {
+        case -1:
+          std::cerr<<"Error. input matrix may be wrong (The elimination process has generated a row in L or U whose length is .gt.  n.)\n";
+          break;
+        case -2:
+          std::cerr<<"The matrix L overflows the array al.\n";
+          break;
+        case -3:
+          std::cerr<<"The matrix U overflows the array alu.\n";
+          break;
+        case -4:
+          std::cerr<<"Illegal value for lfil.\n";
+          break;
+        case -5:
+          std::cerr<<"zero row encountered.\n";
+          break;
+        default:
+          std::cerr<<"zero pivot encountered at step number "<<ierr<<".";
+          break;
+
+      }
       return;
     }
     lusol_(&ndofs,
