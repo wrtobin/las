@@ -77,7 +77,7 @@ namespace las
     bool result = need(rw,cl);
     if(result)
     {
-      coords.push_back({rw,cl});
+      coords.push_back(std::pair<int,int>(rw,cl));
       nnz++;
     }
     return result;
