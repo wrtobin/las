@@ -1,4 +1,5 @@
 #include "lasCSR.h"
+#include "las.h"
 #include <cstring>
 #include <iostream>
 namespace las

@@ -17,7 +17,7 @@ function(add_mpi_test name file no_mpi_proc)
     SET(FLGS "${FLGS} ${GCC_COVERAGE_LINK_FLAGS}" )
     set_target_properties(${name} PROPERTIES LINK_FLAGS_DEBUG ${FLGS} )
   endif()
-  set(test_parameters -np ${no_mpi_proc} ${name} ${ARGN})
+  set(test_parameters -np ${no_mpi_proc} ${CMAKE_CURRENT_BINARY_DIR}/${name} ${ARGN})
   add_test(NAME ${name} COMMAND "mpirun" ${test_parameters} )
 endfunction(add_mpi_test)
 
@@ -39,6 +39,10 @@ target_link_libraries(sparse las)
 
 add_mpi_test(dense dense.cc 1)
 target_link_libraries(dense las)
+
+add_mpi_test(small_mtx test_small.cc 1)
+target_link_libraries(small_mtx las)
+file(COPY small.mtx small_symm_matrix.mtx DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 if(CUDA_FOUND)
   message(STATUS "Adding CUDA test cases:")

@@ -36,13 +36,16 @@ namespace las
     std::vector<double> matrix;
   public:
     SparskitBuffers(int num_dofs);
+    SparskitBuffers(int num_dofs, int num_nonzero);
+    SparskitBuffers(int num_dofs, int num_nonzero, int num_diag_zeros);
     void zero();
-    int matrixLength() {return heuristic_length;}
+    int matrixLength() {return matrix.size();}
     int * intWorkBuffer() {return &int_work_array[0];}
     int * rowsBuffer() {return &rows[0];}
     int * colsBuffer() {return &cols[0];}
     double * doubleWorkBuffer() {return &double_work_array[0];}
     double * matrixBuffer() {return &matrix[0];}
+    void resizeMatrixBuffer(int newSize);
   };
 }
 #endif

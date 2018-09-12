@@ -86,7 +86,7 @@ endif()
 configure_file(lasConfig.h.in "${CMAKE_CURRENT_SOURCE_DIR}/lasConfig.h" @ONLY)
 set(las_headers ${las_headers} ${las_install} lasConfig.h)
 
-add_library(las ${las_sources})
+add_library(las STATIC ${las_sources})
 if(${CMAKE_VERSION} VERSION_GREATER "3.8.2")
   target_compile_features(las PUBLIC cxx_std_11)
 endif()
@@ -121,7 +121,7 @@ function(add_backend backend headers libraries)
   to_include(capi_header capi_header_include)
   configure_file(capi/las_capi.cc ${capi_source})
   set(capi_lib las_capi_${backend})
-  add_library(${capi_lib}
+  add_library(${capi_lib} STATIC
     ${CMAKE_CURRENT_BINARY_DIR}/capi/las_capi_${backend}.h
     ${CMAKE_CURRENT_BINARY_DIR}/capi/las_capi_${backend}.cc
     ${headers})

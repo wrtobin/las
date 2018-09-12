@@ -103,7 +103,7 @@ namespace las
   class LasCreateMat
   {
   public:
-    virtual ~LasCreateMat() {};
+    virtual ~LasCreateMat() {}
     /**
      * Create a matrix.
      * @param lcl The local number of rows (per-process in cm)
@@ -126,7 +126,7 @@ namespace las
   class LasCreateVec
   {
   public:
-    virtual ~LasCreateVec() {};
+    virtual ~LasCreateVec() {}
     /**
      * Create a vector.
      * @param lcl The local number of rows (per-process in cm)
@@ -178,6 +178,7 @@ namespace las
   {
   public:
     virtual void solve(Mat * k, Vec * u, Vec * f) = 0;
+    virtual ~Solve() {}
   };
   /**
    * Interface for Matrix-Vector multiplication
@@ -189,6 +190,7 @@ namespace las
   {
   public:
     virtual void exec(Mat * x, Vec * a, Vec * b) = 0;
+    virtual ~MatVecMult() {}
   };
   /**
    * Interface for Matrix-Matrix multiplication
@@ -200,6 +202,12 @@ namespace las
   {
   public:
     virtual void exec(Mat * a, Mat * b, Mat ** c) = 0;
+    virtual ~MatMatMult() {}
   };
+  template <class T>
+  void destroySparsity(Sparsity * s)
+  {
+    delete reinterpret_cast<T>(s);
+  }
 }
 #endif
