@@ -4,6 +4,7 @@
 #include "lasDebug.h"
 #include "lasNNZ.h"
 #include "lasInline.h"
+#include "lasSys.h"
 #include <petsc.h>
 #include <petscmat.h>
 #include <petscksp.h>

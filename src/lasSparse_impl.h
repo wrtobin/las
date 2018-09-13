@@ -3,6 +3,7 @@
 #include "lasAlloc.h"
 #include "lasCSR.h"
 #include "lasInline.h"
+#include "lasSys.h"
 #include "lasVec_impl.h"
 #include <cassert>
 #include <cmath>

@@ -2,6 +2,7 @@
 #define LAS_VEC_IMPL_H_
 #include "lasAlloc.h"
 #include "lasInline.h"
+#include <lasSys.h>
 #include <cassert>
 #include <cstring> // memset
 namespace las
