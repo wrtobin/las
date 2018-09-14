@@ -32,7 +32,7 @@ namespace las
     if(coords.size() < nnz) {
       std::cerr<<"Warning: ignored "<<nnz-coords.size() << " duplicate entries\n";
     }
-    //nnz = coords.size();
+    nnz = coords.size();
     cls.resize(nnz);
     for(std::size_t i=0; i<coords.size(); ++i) {
       ++rws[coords[i].first+1];

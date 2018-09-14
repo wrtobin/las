@@ -182,6 +182,13 @@ namespace las
        cc < m->getCSR()->getNumCols())
       (*m)(rr,cc) = vl;
   }
+  /*
+   * Perform a ilut decomposition folowed by lu solve
+   * \param \in k  matrix to solve
+   * \param \in f force vector
+   * \param \out u vector of unknowns
+   * \param lfil the maximum number of elements in each row/column of k
+   */
   LAS_INLINE void SparskitLU::solve(Mat * k, Vec * u, Vec * f)
   {
     //DBG(bfrs->zero());
@@ -189,16 +196,22 @@ namespace las
     skVec * uv = getSparskitVector(u);
     skVec * fv = getSparskitVector(f);
     CSR * csr = mat->getCSR();
+    int ndofs = csr->getNumRows();
+    // Here we are making the assumption that the matrix is symmetric
+    // e.g. mag entries per col is the same as max row entries should be
+    // much cheaper (in most practical circumstances)
+    int lfil = csr->getMaxEntPerRow();
+    assert((lfil>0) && (lfil <= ndofs));
+    //assert(lfil == csr->getMaxEntPerCol());
     int bfr_lng = 0;
     int ierr = 0;
-    int ndofs = csr->getNumRows();
     do {
     bfr_lng = bfrs->matrixLength();
     ilut_(&ndofs,
           &(*mat)(0,0),
           csr->getCols(),
           csr->getRows(),
-          &ndofs,
+          &lfil,
           &eps,
           bfrs->matrixBuffer(),
           bfrs->colsBuffer(),

@@ -53,6 +53,8 @@ namespace las
     }
     int * getRows() { return &rws[0]; }
     int * getCols() { return &cls[0]; }
+    int getMaxEntPerRow();
+    int getMaxEntPerCol();
   };
   Sparsity * csrFromArray(int rws, int cls, int nnz, int * row_arr, int * col_arr);
   /**
