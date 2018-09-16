@@ -197,12 +197,6 @@ namespace las
     skVec * fv = getSparskitVector(f);
     CSR * csr = mat->getCSR();
     int ndofs = csr->getNumRows();
-    // Here we are making the assumption that the matrix is symmetric
-    // e.g. mag entries per col is the same as max row entries should be
-    // much cheaper (in most practical circumstances)
-    int lfil = csr->getMaxEntPerRow();
-    assert((lfil>0) && (lfil <= ndofs));
-    //assert(lfil == csr->getMaxEntPerCol());
     int bfr_lng = 0;
     int ierr = 0;
     do {
@@ -211,7 +205,7 @@ namespace las
           &(*mat)(0,0),
           csr->getCols(),
           csr->getRows(),
-          &lfil,
+          &ndofs,
           &eps,
           bfrs->matrixBuffer(),
           bfrs->colsBuffer(),
