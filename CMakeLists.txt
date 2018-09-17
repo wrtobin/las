@@ -117,7 +117,6 @@ endif()
 message(STATUS "Configuring las")
 add_subdirectory(src)
 
-find_package(PETSc) # may influence scorec dependencies (remove eventually)
 find_package(SCOREC)
 if(SCOREC_FOUND)
   message(STATUS "Configure SCOREC/core integration")

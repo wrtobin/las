@@ -21,7 +21,7 @@ if(PKGCONFIG_FOUND)
     set(_PETSC_OPTS "REQUIRED QUIET")
   endif()
 
-  pkg_check_modules(PETSC ${_PETSC_OPTS} PETSc)
+  pkg_check_modules(PETSC ${_PETSC_OPTS} PETSc REQUIRED)
 
   #TODO : set the below XXX_LIBRARIES and XXX_INCLUDE_DIRS for petsc external libs
   if(PETSC_FOUND)

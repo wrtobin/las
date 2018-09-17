@@ -41,10 +41,26 @@ namespace las
     {
       static_cast<T*>(this)->_zero(v,rw);
     }
+    /*
+     * Assemble (add) values int las vector
+     * \param v vector to assemble into
+     * \param cnt number of values to be assembled in
+     * \param rws int array of row indicies to assemble into
+     * \param vls scalar array of values
+     */
     void assemble(Vec * v, int cnt, int * rws, scalar * vls)
     {
       static_cast<T*>(this)->_assemble(v,cnt,rws,vls);
     }
+    /*
+     * Assemble (add) values int las matrix
+     * \param m matrix to assemble into
+     * \param cntr number of rows to sum into
+     * \param rws array of the row indices
+     * \param cntc number of columns to sum into
+     * \param cls array of column indices to sum into
+     * \param vls scalar array of values
+     */
     void assemble(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
     {
       static_cast<T*>(this)->_assemble(m,cntr,rws,cntc,cls,vls);

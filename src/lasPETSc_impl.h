@@ -96,50 +96,79 @@ namespace las
       VecRestoreArray(*getPetscVec(v),&vls);
     }
   };
-  LAS_INLINE las::Mat * createPetscMatrix(unsigned l, unsigned bs = 1, Sparsity * sprs = nullptr, MPI_Comm cm = LAS_COMM_WORLD)
+  LAS_INLINE las::Mat * createPetscMatrix(unsigned l,
+                                          unsigned bs = 1,
+                                          Sparsity * sprs = nullptr,
+                                          MPI_Comm cm = LAS_COMM_WORLD)
   {
     bool have_sparsity = sprs != nullptr;
-    NNZ * nnz = have_sparsity ? reinterpret_cast<NNZ*>(sprs) : nullptr;
-    const char * mat_tps[][2] = { {MATSEQAIJ, MATSEQBAIJ}, {MATMPIAIJ, MATMPIBAIJ} };
+    NNZ * nnz = have_sparsity ? reinterpret_cast<NNZ *>(sprs) : nullptr;
+    const char * mat_tps[][2] = {{MATSEQAIJ, MATSEQBAIJ},
+                                 {MATMPIAIJ, MATMPIBAIJ}};
     bool is_par = cm != MPI_COMM_SELF;
     bool blk = bs > 1;
     ::Mat * m = new ::Mat;
-    MatCreate(cm,m);
-    MatSetType(*m, mat_tps[is_par][blk]);
-    MatSetSizes(*m, l, l, PETSC_DETERMINE, PETSC_DETERMINE);
-    MatSetBlockSize(*m, bs);
-    if(have_sparsity)
+    assert(m);
+    PetscErrorCode ierr = MatCreate(cm, m);
+    CHKERRABORT(LAS_COMM_WORLD, ierr);
+    ierr = MatSetType(*m, mat_tps[is_par][blk]);
+    CHKERRABORT(LAS_COMM_WORLD, ierr);
+    ierr = MatSetSizes(*m, l, l, PETSC_DETERMINE, PETSC_DETERMINE);
+    CHKERRABORT(LAS_COMM_WORLD, ierr);
+    ierr = MatSetBlockSize(*m, bs);
+    CHKERRABORT(LAS_COMM_WORLD, ierr);
+    if (have_sparsity)
     {
-      if(!is_par)
+      if (!is_par)
       {
-        if(nnz->dnnz.size() == l)
+        if (nnz->dnnz.size() == l)
         {
-          if(nnz->onnz.size() == l)
+          if (nnz->onnz.size() == l)
           {
-            for(unsigned ii = 0; ii < l; ++ii)
+            for (unsigned ii = 0; ii < l; ++ii)
               nnz->dnnz[ii] += nnz->onnz[ii];
           }
-          if(!blk)
-            MatSeqAIJSetPreallocation(*m,0,&nnz->dnnz[0]);
-          else if(blk)
-            MatSeqBAIJSetPreallocation(*m,bs,0,&nnz->dnnz[0]);
+          if (!blk)
+          {
+            ierr = MatSeqAIJSetPreallocation(*m, 0, &nnz->dnnz[0]);
+            CHKERRABORT(LAS_COMM_WORLD, ierr);
+          }
+          else if (blk)
+          {
+            ierr = MatSeqBAIJSetPreallocation(*m, bs, 0, &nnz->dnnz[0]);
+            CHKERRABORT(LAS_COMM_WORLD, ierr);
+          }
         }
       }
       else
       {
-        if(nnz->dnnz.size() == l && nnz->onnz.size() == l)
+        if (nnz->dnnz.size() == l && nnz->onnz.size() == l)
         {
-          if(!blk)
-            MatMPIAIJSetPreallocation(*m,0,&nnz->dnnz[0],0,&nnz->onnz[0]);
-          else if(blk)
-            MatMPIBAIJSetPreallocation(*m,bs,0,&nnz->dnnz[0],0,&nnz->onnz[0]);
+          if (!blk)
+          {
+            ierr = MatMPIAIJSetPreallocation(*m, 0, &nnz->dnnz[0], 0,
+                                             &nnz->onnz[0]);
+            CHKERRABORT(LAS_COMM_WORLD, ierr);
+          }
+          else if (blk)
+          {
+            ierr = MatMPIBAIJSetPreallocation(*m, bs, 0, &nnz->dnnz[0], 0,
+                                              &nnz->onnz[0]);
+            CHKERRABORT(LAS_COMM_WORLD, ierr);
+          }
         }
       }
-      MatSetOption(*m,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);
+      ierr = MatSetOption(*m, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
+      CHKERRABORT(LAS_COMM_WORLD, ierr);
     }
-    if(!blk)
-      MatSetOption(*m,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);
-    return reinterpret_cast<las::Mat*>(m);
+    if (!blk)
+    {
+      ierr = MatSetUp(*m);
+      CHKERRABORT(LAS_COMM_WORLD, ierr);
+      ierr = MatSetOption(*m, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);
+      CHKERRABORT(LAS_COMM_WORLD, ierr);
+    }
+    return reinterpret_cast<las::Mat *>(m);
   }
   LAS_INLINE void destroyPetscMat(las::Mat * m)
   {
@@ -245,14 +274,7 @@ namespace las
       ::Mat * pk = getPetscMat(k);
       ::Vec * pu = getPetscVec(u);
       ::Vec * pf = getPetscVec(f);
-      DBG(
-        MPI_Comm kspCm = MPI_COMM_NULL;
-        MPI_Comm matCm = MPI_COMM_NULL;
-        PetscObjectGetComm((PetscObject)ksp,&kspCm);
-        PetscObjectGetComm((PetscObject)pk,&matCm);
-        assert(kspCm == matCm);
-        )
-        VecAssemblyBegin(*pf);
+      VecAssemblyBegin(*pf);
       VecAssemblyEnd(*pf);
       MatAssemblyBegin(*pk,MAT_FINAL_ASSEMBLY);
       MatAssemblyEnd(*pk,MAT_FINAL_ASSEMBLY);

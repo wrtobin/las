@@ -56,6 +56,15 @@ namespace las
     int getMaxEntPerRow();
     int getMaxEntPerCol();
   };
+  /*
+   * Construct a csr sparse matrix structure from csr arrays
+   * \param rws number of rows int the csr matrix
+   * \param cls number of columns in the csr matrix
+   * \param nnz number of nonzeroes in the csr matrix
+   * \param row_arr array where first entry is 1 and all successive entries
+   *        hold row_arry[i-1]+number of entries on i-1 row. (one indexed)
+   * \param col_arr column index of each matrix entry (should be len nnz)
+   */ 
   Sparsity * csrFromArray(int rws, int cls, int nnz, int * row_arr, int * col_arr);
   /**
    * Construct a CSR sparse matrix structure from a full matrix buffer
