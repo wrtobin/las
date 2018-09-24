@@ -12,6 +12,12 @@ namespace las
   LasOps<sparse> * getLASOps();
   MatVecMult * getSparseMatVecMult();
   MatMatMult * getSparseMatMatMult();
+  template <>
+  void finalizeMatrix<sparse>(Mat * mat);
+  template <>
+  void finalizeVector<sparse>(Vec * vec);
+  template <>
+  void destroySparsity<sparse>(Sparsity * sprs);
 }
 #include "lasSparse_impl.h"
 #endif

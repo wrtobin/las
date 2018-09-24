@@ -14,6 +14,9 @@ namespace las
   {
     std::vector<int> dnnz;
     std::vector<int> onnz;
+    unsigned blk_sz;
+    unsigned rws_size;
+    unsigned cls_size;
   };
 }
 #endif

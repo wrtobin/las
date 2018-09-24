@@ -4,6 +4,8 @@
 #include "lasSys.h"
 namespace las
 {
+  void initLAS(int * argc, char *** args, MPI_Comm cm=LAS_COMM_WORLD);
+  void finalizeLAS();
   /**
    * The opaque type for all matrices in LAS.
    */
@@ -220,10 +222,23 @@ namespace las
     virtual void exec(Mat * a, Mat * b, Mat ** c) = 0;
     virtual ~MatMatMult() {}
   };
+  /*
+   * Finalize routines which must be called on a matrix when switching from
+   * add mode to set mode
+   */
   template <class T>
+  void finalizeMatrix(Mat * mat);
+  /*
+   * Finalize routines which must be called on a matrix when switching from
+   * add mode to set mode
+   */
+  template <typename T>
+  void finalizeVector(Vec * vec);
+  template <typename T>
   void destroySparsity(Sparsity * s)
   {
     delete reinterpret_cast<T>(s);
   }
+ // class petsc;
 }
 #endif
