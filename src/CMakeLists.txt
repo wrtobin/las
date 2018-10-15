@@ -161,6 +161,7 @@ if(CUDA_FOUND)
   add_backend(cusparse "${cusparse_api_headers}" ${CUDA_LIBRARIES})
 endif()
 if(PETSC_FOUND)
+  target_compile_definitions(las PUBLIC HAVE_PETSC)
   add_backend(petsc "${petsc_api_headers}" ${PETSC_LIBRARIES})
 endif()
 

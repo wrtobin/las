@@ -233,5 +233,13 @@ namespace las
       ops = new sparse;
     return ops;
   }
+  template <>
+  LAS_INLINE void finalizeMatrix<sparse>(Mat * mat){};
+  template <>
+  LAS_INLINE void finalizeVector<sparse>(Vec * vec){};
+  template <>
+  LAS_INLINE void destroySparsity<sparse>(Sparsity * sprs) {
+    delete reinterpret_cast<CSR*>(sprs);
+  }
 }
 #endif

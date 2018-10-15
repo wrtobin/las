@@ -9,9 +9,7 @@
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
-#ifdef USING_PETSC
-  las::initPETScLAS(&argc, &argv, LAS_COMM_WORLD);
-#endif
+  las::initLAS(&argc, &argv);
   auto ops = las::getLASOps<las::BACKEND>();
   auto vb = las::getVecBuilder<las::BACKEND>(0);
   las::Vec * v = vb->create(3, 1, LAS_COMM_WORLD);
@@ -38,6 +36,8 @@ int main(int argc, char * argv[])
   ops->assemble(m, 1, &rws[1], 1, &rws[1], &vals[1]);
   ops->assemble(m, 1, &rws[2], 1, &rws[2], &vals[2]);
   ops->assemble(m, 1, &rws[0], 1, &rws[1], &vals[2]);
+  las::finalizeMatrix<las::BACKEND>(m);
+  las::finalizeVector<las::BACKEND>(v);
 #if defined USING_SPARSKIT
   las::printSparskitMat(std::cout, m, las::PrintType::full);
   int nnz = ((las::CSR *)sprs)->getNumNonzero();
@@ -64,11 +64,10 @@ int main(int argc, char * argv[])
   delete mb;
   delete vb;
   delete ops;
-#if BACKEND == sparskit
-  las::destroySparsity<las::CSR *>(sprs);
-#endif
-#ifdef USING_PETSC
-  las::finalizePETScLAS();
-#endif
+  las::destroySparsity<las::BACKEND>(sprs);
+//#if BACKEND == sparskit
+//  las::destroySparsity<las::CSR *>(sprs);
+//#endif
+  las::finalizeLAS();
   MPI_Finalize();
 }

@@ -16,9 +16,8 @@ endif()
 
 find_package(PETSc)
 if(PETSC_FOUND)
-  set(las_core_petsc_install lasCorePETSc.h
-                             lasCorePETSc_impl.h)
-  set(las_core_petsc_sources )
+  set(las_core_petsc_install lasCorePETSc.h)
+  set(las_core_petsc_sources lasCorePETSc.cc)
   set(las_core_install ${las_core_install} ${las_core_petsc_install})
   set(las_core_sources ${las_core_sources} ${las_core_petsc_sources})
   set(link_libs ${link_libs} ${PETSC_LIBRARIES})
