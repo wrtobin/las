@@ -44,6 +44,14 @@ add_mpi_test(small_mtx test_small.cc 1)
 target_link_libraries(small_mtx las)
 file(COPY small.mtx small_symm_matrix.mtx DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
+add_mpi_test(test_solve_petsc test_solve.cc 1)
+target_link_libraries(test_solve_petsc las)
+target_compile_definitions(test_solve_petsc PUBLIC -DBACKEND=petsc -DUSING_PETSC)
+
+add_mpi_test(test_solve_sparskit test_solve.cc 1)
+target_link_libraries(test_solve_sparskit las)
+target_compile_definitions(test_solve_sparskit PUBLIC -DBACKEND=sparskit -DUSING_SPARSKIT)
+
 if(CUDA_FOUND)
   message(STATUS "Adding CUDA test cases:")
   simple_test(cusparse cusparse.cc)
