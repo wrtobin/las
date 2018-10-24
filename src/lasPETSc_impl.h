@@ -482,6 +482,28 @@ namespace las
   {
     return new PetscMatMatMult;
   }
+  class PetscScalarMatMult : public ScalarMatMult
+  {
+    public:
+    virtual void exec(scalar s, Mat * a, Mat ** c)
+    {
+      if (c == nullptr)
+      {
+        PetscErrorCode ierr = ::MatScale(*getPetscMat(a), s);
+      }
+      else
+      {
+        std::cerr << "Out of place matrix scalar multiplication not "
+                     "implemented in petsc"
+                  << std::endl;
+        std::abort();
+      }
+    }
+  };
+  LAS_INLINE ScalarMatMult * createPetscScalarMatMult()
+  {
+    return new PetscScalarMatMult;
+  }
   template <>
   LAS_INLINE void finalizeMatrix<petsc>(Mat * mat)
   {

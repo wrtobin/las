@@ -17,6 +17,7 @@ namespace las
   Solve * createPetscQNSolve(void * a);
   MatVecMult * createPetscMatVecMult();
   MatMatMult * createPetscMatMatMult();
+  ScalarMatMult * createPetscScalarMatMult();
   template <>
   void finalizeMatrix<petsc>(Mat * mat);
   template <>
