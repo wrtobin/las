@@ -21,6 +21,7 @@ namespace las
   Solve * createSpaskitLUSolve(Solve * slvr, double eps = 0.0);
   Solve * createSparskitQuickLUSolve(SparskitBuffers * b, double eps = 0.0);
   Solve * createSparskitQuickLUSolve(Solve * slvr, double eps = 0.0);
+  ScalarMatMult * createSparskitScalarMatMult() { return getSparseScalarMatMult(); }
   void printSparskitMat(std::ostream &,
                         Mat * m,
                         PrintType pt = PrintType::full,

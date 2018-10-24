@@ -57,6 +57,34 @@ int main(int ac,char * av[])
   mat_fct->destroy(rst2);
   mat_fct->destroy(row_col_mat);
   mat_fct->destroy(empty_row_mat);
+  // test scalarMat multiply
+  double test_scalarMatMult_vls[] = {1.0, 2.0, 3.0, 4.0, 5.0,
+                                     6.0, 7.0, 8.9, 9.0};
+  las::Mat * test_scalarMatMult = mat_fct->create(
+      LAS_IGNORE, LAS_IGNORE,
+      las::csrFromFull(&test_scalarMatMult_vls[0], 3, 3), MPI_COMM_SELF);
+  ops->set(test_scalarMatMult, 3, &rwcls[0], 3, &rwcls[0],
+           &test_scalarMatMult_vls[0]);
+  las::Mat * scalarMatMult_rslt = nullptr;
+  las::ScalarMatMult * smm = las::getSparseScalarMatMult();
+  smm->exec(2.0, test_scalarMatMult, &scalarMatMult_rslt);
+  double * scalarMatMult_rslt_arr = nullptr;
+  ops->get(scalarMatMult_rslt, 3, &rwcls[0], 3, &rwcls[0],
+           &scalarMatMult_rslt_arr);
+  for (int i = 0; i < 9; ++i)
+  {
+    assert(fabs(test_scalarMatMult_vls[i] * 2 - scalarMatMult_rslt_arr[i]) <
+           1E-15);
+  }
+  // test inplace scalar mat mult
+  smm->exec(2.0, test_scalarMatMult, nullptr);
+  ops->get(test_scalarMatMult, 3, &rwcls[0], 3, &rwcls[0],
+           &scalarMatMult_rslt_arr);
+  for (int i = 0; i < 9; ++i)
+  {
+    assert(fabs(test_scalarMatMult_vls[i] * 2 - scalarMatMult_rslt_arr[i]) <
+           1E-15);
+  }
   MPI_Finalize();
   return 0;
 }

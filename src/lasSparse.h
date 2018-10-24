@@ -12,6 +12,7 @@ namespace las
   LasOps<sparse> * getLASOps();
   MatVecMult * getSparseMatVecMult();
   MatMatMult * getSparseMatMatMult();
+  ScalarMatMult * getSparseScalarMatMult();
   template <>
   void finalizeMatrix<sparse>(Mat * mat);
   template <>

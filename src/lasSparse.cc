@@ -51,6 +51,37 @@ namespace las
             (*cz)(xrw,ycl) += (*cx)(xrw,inr) * (*cy)(inr,ycl);
     }
   };
+  class sparseScalarMat : public ScalarMatMult
+  {
+    public:
+    void exec(scalar s, Mat * a, Mat ** c)
+    {
+      csrMat * ca = getCSRMat(a);
+      CSR * a_csr = ca->getCSR();
+      scalar * vals = ca->getVals();
+      int nnz = a_csr->getNumNonzero();
+      // if we want to multiply in place
+      if (c == NULL)
+      {
+        for (int i = 0; i < nnz; ++i)
+        {
+          vals[i] = s * vals[i];
+        }
+      }
+      else
+      {
+        CSR * c_csr =
+            new CSR(a_csr->getNumRows(), a_csr->getNumCols(),
+                    a_csr->getNumNonzero(), a_csr->getRows(), a_csr->getCols());
+        (*c) = createCSRMatrix(reinterpret_cast<Sparsity *>(c_csr), true);
+        scalar * c_vals = getCSRMat(*c)->getVals();
+        for (int i = 0; i < nnz; ++i)
+        {
+          c_vals[i] = s * vals[i];
+        }
+      }
+    }
+  };
   MatVecMult * getSparseMatVecMult()
   {
     static sparseMatVec * mvm = nullptr;
@@ -65,5 +96,10 @@ namespace las
       mmm = new sparseMatMat;
     return mmm;
   }
-
+  ScalarMatMult * getSparseScalarMatMult()
+  {
+    static sparseScalarMat * smm = nullptr;
+    if (smm == nullptr) smm = new sparseScalarMat;
+    return smm;
+  }
 }

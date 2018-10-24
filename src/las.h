@@ -222,6 +222,19 @@ namespace las
     virtual void exec(Mat * a, Mat * b, Mat ** c) = 0;
     virtual ~MatMatMult() {}
   };
+  /**
+   * Interface for Scalar-Matrix multiplication
+   * If c is NULL performs an in place multiplication
+   * @todo Retrieve backend-specific solvers using
+   *       backend id classes to do template
+   *       specialization, as above.
+   */
+  class ScalarMatMult
+  {
+    public:
+    virtual void exec(scalar s, Mat * a, Mat ** c) = 0;
+    virtual ~ScalarMatMult() {}
+  };
   /*
    * Finalize routines which must be called on a matrix when switching from
    * add mode to set mode
