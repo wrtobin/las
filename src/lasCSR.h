@@ -38,18 +38,20 @@ namespace las
     int getNumRows() const { return nr; }
     int getNumCols() const { return nc; }
     int getNumNonzero() const { return nnz; }
+    // return the index into the values array
+    // if the location is not stored then return -1
     int operator()(int rw, int cl) const
     {
-      int result = -1;
-      int fst = rws[rw] - 1;
-      while((fst < rws[rw+1] - 2) && (cls[fst] - 1 < cl))
-        ++fst;
-      // the column is correct at offset and the row isn't empty
-      if(cls[fst] - 1 == cl && rws[rw] - 1 <= rws[rw+1] - 2)
-        result = fst;
-      else
-        result = -1;
-      return result;
+      // the row is empty
+      if(rws[rw+1]-rws[rw] == 0)
+        return -1;
+      // TODO this can be swaped for a binary search
+      for (int idx=rws[rw]-1; idx<rws[rw+1]-1; ++idx)
+      {
+       if (cls[idx]-1 == cl)
+         return idx;
+      }
+      return -1;
     }
     int * getRows() { return &rws[0]; }
     int * getCols() { return &cls[0]; }
