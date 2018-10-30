@@ -15,12 +15,17 @@ namespace las
       int nc = csr->getNumCols();
       int la = sa->size();
       int lb = sb->size();
-      sb->zero();
       assert(nc == la && "Matrix columns and lhs vector length must match");
       assert(nr == lb && "Matrix rows and rhs vector length must match");
       for (int rw = 0; rw < nr; ++rw)
+      {
+        double val = 0;
         for (int cl = 0; cl < nc; ++cl)
-          (*sb)[rw] += (*cm)(rw, cl) * (*sa)[cl];
+        {
+           val+= (*cm)(rw, cl) * (*sa)[cl];
+        }
+        (*sb)[rw] = val;
+      }
     }
   };
   class sparseMatMat : public MatMatMult
