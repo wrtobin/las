@@ -10,5 +10,6 @@ namespace las
    *  values of the numbering, no mesh partitioning is considered.
    */
   Sparsity * createCSR(apf::Numbering * num, int ndofs);
+  Sparsity * createIdentityCSR(int ndofs);
 }
 #endif

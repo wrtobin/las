@@ -40,9 +40,33 @@ namespace las
       }
     }
   };
+  class IdentityCSR : public CSRBuilder
+  {
+  protected:
+    int ndofs;
+  public:
+    IdentityCSR(int ndofs)
+      : CSRBuilder(ndofs,ndofs)
+      , ndofs(ndofs)
+    {
+    }
+    void run()
+    {
+      for(int i=0; i<ndofs;++i)
+      {
+        add(i,i);
+      }
+    }
+  };
   Sparsity * createCSR(apf::Numbering * num, int ndofs)
   {
     CSRFromNumbering bldr(num,ndofs);
+    bldr.run();
+    return bldr.finalize();
+  }
+  Sparsity * createIdentityCSR(int ndofs)
+  {
+    IdentityCSR bldr(ndofs);
     bldr.run();
     return bldr.finalize();
   }

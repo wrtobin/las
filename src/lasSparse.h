@@ -13,6 +13,7 @@ namespace las
   MatVecMult * getSparseMatVecMult();
   MatMatMult * getSparseMatMatMult();
   ScalarMatMult * getSparseScalarMatMult();
+  ScalarMatScalarMatAdd * getSparseScalarMatScalarMatAdd();
   template <>
   void finalizeMatrix<sparse>(Mat * mat);
   template <>

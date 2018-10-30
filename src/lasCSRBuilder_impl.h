@@ -29,9 +29,11 @@ namespace las
     auto it = std::unique(coords.begin(), coords.end(), unique_comps<int,int>);
     coords.resize(std::distance(coords.begin(), it));
     assert(nnz >= coords.size());
-    if(coords.size() < nnz) {
-      std::cerr<<"Warning: ignored "<<nnz-coords.size() << " duplicate entries\n";
-    }
+    // this is useful for debugging, but doesn't make sense when the builder is needed
+    // for things like the add function...
+    //if(coords.size() < nnz) {
+    //  std::cerr<<"Warning: ignored "<<nnz-coords.size() << " duplicate entries\n";
+    //}
     nnz = coords.size();
     cls.resize(nnz);
     for(std::size_t i=0; i<coords.size(); ++i) {
@@ -61,7 +63,7 @@ namespace las
       result = false;
     if(rw>=rw_cnt || cl>=cl_cnt) 
     {
-      std::cerr<<"Warning: inserting a row outside the matrix bounds. Skipping it.\n";
+      std::cerr<<"Warning: inserting a row/column outside the matrix bounds ("<<rw<<","<<cl<<"). Skipping it.\n";
       result=false;
     }
     return result;

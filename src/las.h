@@ -71,6 +71,10 @@ namespace las
     {
       static_cast<T*>(this)->_set(v,cnt,rws,vls);
     }
+    void set(Vec * v, scalar * vls)
+    {
+      static_cast<T*>(this)->_set(v,vls);
+    }
     void set(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
     {
       static_cast<T*>(this)->_set(m,cntr,rws,cntc,cls,vls);
@@ -198,6 +202,9 @@ namespace las
     virtual void solve(Mat * k, Vec * u, Vec * f) = 0;
     virtual ~Solve() {}
   };
+  // FIXME this is what the non-zero interface should look like
+  template <typename T>
+  Solve * getSolve(int id);
   /**
    * Interface for Matrix-Vector multiplication
    * @todo Retrieve backend-specific solvers using
@@ -234,6 +241,24 @@ namespace las
     public:
     virtual void exec(scalar s, Mat * a, Mat ** c) = 0;
     virtual ~ScalarMatMult() {}
+  };
+  /*
+   * interface for C = alpha_1*A+alpha_2*B
+   */
+  class ScalarMatScalarMatAdd 
+  {
+    public:
+      virtual void exec(scalar s1, Mat * a, scalar s2, Mat * b, Mat ** c) = 0;
+      virtual ~ScalarMatScalarMatAdd() {}
+  };
+  /*
+   * Interface for scalar-vector multiplication
+   */
+  class ScalarVecMult
+  {
+    public:
+      virtual void exec(scalar s, Vec * x, Vec ** y) = 0;
+      virtual ~ScalarVecMult() {}
   };
   /*
    * Finalize routines which must be called on a matrix when switching from

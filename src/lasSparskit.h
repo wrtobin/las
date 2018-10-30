@@ -21,13 +21,13 @@ namespace las
   Solve * createSpaskitLUSolve(Solve * slvr, double eps = 0.0);
   Solve * createSparskitQuickLUSolve(SparskitBuffers * b, double eps = 0.0);
   Solve * createSparskitQuickLUSolve(Solve * slvr, double eps = 0.0);
-  ScalarMatMult * createSparskitScalarMatMult() { return getSparseScalarMatMult(); }
+  ScalarMatMult * createSparskitScalarMatMult();
+  ScalarMatScalarMatAdd * getSparskitScalarMatScalarMatAdd();
   void printSparskitMat(std::ostream &,
                         Mat * m,
                         PrintType pt = PrintType::full,
                         bool symmetric = false);
-  //double getSparskitMatValue(Mat *, int rr, int cc);
-  //void setSparskitMatValue(Mat *, int rr, int cc, double vl);
+  MatVecMult * getSparskitMatVecMult();
   Mat * readSparskitMat(std::istream & istream, PrintType pt = PrintType::full);
   bool sparskitMatClose(Mat * m1, Mat * m2, double rtol=1E-15, double atol=1E-15);
 }  // namespace las

@@ -165,6 +165,11 @@ namespace las
       for(int ii = 0; ii < cnt; ++ii)
         (*vec)[rws[ii]] = vls[ii];
     }
+    void _set(Vec * v, scalar * vls)
+    {
+      lasVec * vec = getLASVec(v);
+      vec->setVls(vls);
+    }
     void _set(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
     {
       csrMat * mat = getCSRMat(m);
