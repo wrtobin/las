@@ -3,6 +3,7 @@
 #include "lasSys.h"
 #include <vector>
 #include <iostream>
+#include <algorithm>
 namespace las
 {
   class Sparsity;
@@ -45,13 +46,15 @@ namespace las
       // the row is empty
       if(rws[rw+1]-rws[rw] == 0)
         return -1;
-      // TODO this can be swaped for a binary search
-      for (int idx=rws[rw]-1; idx<rws[rw+1]-1; ++idx)
-      {
-       if (cls[idx]-1 == cl)
-         return idx;
-      }
-      return -1;
+      // this approach finds the correct index in log(n) time where
+      // n is the number of elements on the row
+      typedef std::vector<int>::const_iterator vit_t;
+      vit_t bgn = cls.begin()+rws[rw]-1;
+      vit_t end = cls.begin()+rws[rw+1]-1;
+      std::pair<vit_t, vit_t> bounds = equal_range(bgn, end, cl+1);
+      if(bounds.first == bounds.second)
+        return -1;
+      return bounds.first-cls.begin();
     }
     int * getRows() { return &rws[0]; }
     int * getCols() { return &cls[0]; }
