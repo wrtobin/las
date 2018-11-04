@@ -36,6 +36,7 @@ namespace las
      *       they are converted to use 1-indexing (in a debug build this generates a warning).
      */
     CSR(int r, int c, int nnz, int * rs, int * cs);
+    CSR(int r, int c, int nnz, std::vector<int> const & rs, std::vector<int> const & cs);
     int getNumRows() const { return nr; }
     int getNumCols() const { return nc; }
     int getNumNonzero() const { return nnz; }

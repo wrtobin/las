@@ -22,18 +22,6 @@ namespace las
   {
     return reinterpret_cast<skVec*>(v);
   }
-  LAS_INLINE ScalarMatMult * createSparskitScalarMatMult() 
-  {
-    return getSparseScalarMatMult();
-  }
-  LAS_INLINE MatVecMult * getSparskitMatVecMult() 
-  {
-    return getSparseMatVecMult();
-  }
-  LAS_INLINE ScalarMatScalarMatAdd * getSparskitScalarMatScalarMatAdd()
-  {
-    return getSparseScalarMatScalarMatAdd();
-  }
   class SparskitLU : public Solve
   {
   protected:

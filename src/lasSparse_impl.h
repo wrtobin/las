@@ -8,8 +8,10 @@
 #include <cassert>
 #include <cmath>
 #include <cstring> //memset
+#include <vector>
 namespace las
 {
+  class sparseScalarMatScalarMat;
   class csrMat
   {
     scalar * vls; // nnz +2 (dumy write, 0.0 read)
@@ -24,6 +26,18 @@ namespace las
       //alloc<Malloc>((void**)&vls,sizeof(scalar) * (c->getNumNonzero() + 2));
       vls = new scalar[c->getNumNonzero()+2];
       memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero() + 2));
+    }
+    csrMat(CSR * c, std::vector<scalar> const & vals, bool o = false)
+      : csr(c)
+      , own(o)
+    {
+      vls = new scalar[c->getNumNonzero()+2];
+      for(int i=0; i<c->getNumNonzero();++i)
+      {
+        vls[i] = vals[i];
+      }
+      vls[c->getNumNonzero()] = 0;
+      vls[c->getNumNonzero()+1] = 0;
     }
     ~csrMat()
     {
