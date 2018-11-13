@@ -165,12 +165,13 @@ namespace las
     void _assemble(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
     {
       csrMat * mat = getCSRMat(m);
+      scalar vl;
+      // take advantage of the fact that in general rws, cls sorted
       for(int ii = 0; ii < cntr; ++ii)
         for(int jj = 0; jj < cntc; ++jj)
         {
-          scalar vl = vls[ii * cntc + jj];
-          //if(vl != 0.0) // don't want to attempt to access zero locations in a sparse matrix
-              (*mat)(rws[ii],cls[jj]) += vl;
+          vl = vls[ii * cntc + jj];
+          (*mat)(rws[ii],cls[jj]) += vl;
         }
     }
     void _set(Vec * v, int cnt, int * rws, scalar * vls)

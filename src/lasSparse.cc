@@ -5,6 +5,7 @@ namespace las
   class sparseMatVec : public MatVecMult
   {
     public:
+      /*
     void exec(Mat * x, Vec * a, Vec * b)
     {
       csrMat * cm = getCSRMat(x);
@@ -23,6 +24,33 @@ namespace las
         for (int cl = 0; cl < nc; ++cl)
         {
           val += (*cm)(rw, cl) * (*sa)[cl];
+        }
+        (*sb)[rw] = val;
+      }
+    }
+    */
+    void exec(Mat * x, Vec * a, Vec * b)
+    {
+      csrMat * cm = getCSRMat(x);
+      CSR * csr = cm->getCSR();
+      scalar * c_vals = cm->getVals();
+      int * c_cls = csr->getCols();
+      int * c_rws = csr->getRows();
+      lasVec * sa = getLASVec(a);
+      lasVec * sb = getLASVec(b);
+      int nr = csr->getNumRows();
+      int nc = csr->getNumCols();
+      int la = sa->size();
+      int lb = sb->size();
+      double val;
+      assert(nc == la && "Matrix columns and lhs vector length must match");
+      assert(nr == lb && "Matrix rows and rhs vector length must match");
+      for (int rw = 0; rw < nr; ++rw)
+      {
+        val = 0;
+        for(int idx = c_rws[rw]-1; idx<c_rws[rw+1]-1; ++idx)
+        {
+          val += c_vals[idx]*(*sa)[c_cls[idx]-1];
         }
         (*sb)[rw] = val;
       }

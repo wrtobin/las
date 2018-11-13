@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <cassert>
 namespace las
 {
   class Sparsity;
@@ -42,8 +43,11 @@ namespace las
     int getNumNonzero() const { return nnz; }
     // return the index into the values array
     // if the location is not stored then return -1
+    // note rw and cl start at zero
     int operator()(int rw, int cl) const
     {
+      assert(rw < nr && rw>=0);
+      assert(cl < nc && cl>=0);
       // the row is empty
       if(rws[rw+1]-rws[rw] == 0)
         return -1;
