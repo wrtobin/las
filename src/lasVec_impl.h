@@ -30,6 +30,10 @@ namespace las
         idx = cnt;
       return vls[idx];
     }
+    void setVls(scalar * values) {
+      dealloc<Malloc>((void**)vls);
+      vls = values;
+    }
     int size()
     {
       return cnt;

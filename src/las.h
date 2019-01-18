@@ -71,6 +71,10 @@ namespace las
     {
       static_cast<T*>(this)->_set(v,cnt,rws,vls);
     }
+    void set(Vec * v, scalar * vls)
+    {
+      static_cast<T*>(this)->_set(v,vls);
+    }
     void set(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
     {
       static_cast<T*>(this)->_set(m,cntr,rws,cntc,cls,vls);
@@ -198,6 +202,8 @@ namespace las
     virtual void solve(Mat * k, Vec * u, Vec * f) = 0;
     virtual ~Solve() {}
   };
+  template <typename T>
+  Solve * getSolve(int id);
   /**
    * Interface for Matrix-Vector multiplication
    * @todo Retrieve backend-specific solvers using
@@ -210,6 +216,8 @@ namespace las
     virtual void exec(Mat * x, Vec * a, Vec * b) = 0;
     virtual ~MatVecMult() {}
   };
+  template <class T>
+  MatVecMult * getMatVecMult();
   /**
    * Interface for Matrix-Matrix multiplication
    * @todo Retrieve backend-specific solvers using
@@ -222,6 +230,56 @@ namespace las
     virtual void exec(Mat * a, Mat * b, Mat ** c) = 0;
     virtual ~MatMatMult() {}
   };
+  template <class T>
+  MatMatMult * getMatMatMult();
+  /**
+   * Interface for Scalar-Matrix multiplication
+   * If c is NULL performs an in place multiplication
+   * @todo Retrieve backend-specific solvers using
+   *       backend id classes to do template
+   *       specialization, as above.
+   */
+  class ScalarMatMult
+  {
+    public:
+    virtual void exec(scalar s, Mat * a, Mat ** c) = 0;
+    virtual ~ScalarMatMult() {}
+  };
+  template <class T>
+  ScalarMatMult * getScalarMatMult();
+  /*
+   * interface for C = alpha_1*A+alpha_2*B
+   */
+  class MatMatAdd 
+  {
+    public:
+      virtual void exec(scalar s1, Mat * a, scalar s2, Mat * b, Mat ** c) = 0;
+      virtual ~MatMatAdd() {}
+  };
+  template <class T>
+  MatMatAdd * getMatMatAdd();
+  /*
+   * interface for vector vector addition
+   */
+  class VecVecAdd
+  {
+    public:
+    virtual void exec(scalar s1, Vec * v1, scalar s2, Vec * v2, Vec *& v3) = 0;
+    virtual ~VecVecAdd() {}
+  };
+  template <class T>
+  VecVecAdd * getVecVecAdd();
+  /*
+   * Interface for scalar-vector multiplication
+   */
+  class ScalarVecMult
+  {
+    public:
+      virtual void exec(scalar s, Vec * x, Vec ** y) = 0;
+      virtual ~ScalarVecMult() {}
+  };
+  template <class T>
+  ScalarVecMult * getScalarVecMult();
   /*
    * Finalize routines which must be called on a matrix when switching from
    * add mode to set mode

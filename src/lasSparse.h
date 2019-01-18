@@ -10,8 +10,16 @@ namespace las
   LasCreateVec * getVecBuilder<sparse>(int);
   template <>
   LasOps<sparse> * getLASOps();
-  MatVecMult * getSparseMatVecMult();
-  MatMatMult * getSparseMatMatMult();
+  template <>
+  MatVecMult * getMatVecMult<sparse>();
+  template <>
+  MatMatMult * getMatMatMult<sparse>();
+  template<>
+  ScalarMatMult * getScalarMatMult<sparse>();
+  template <>
+  MatMatAdd * getMatMatAdd<sparse>();
+  template <>
+  VecVecAdd * getVecVecAdd<sparse>();
   template <>
   void finalizeMatrix<sparse>(Mat * mat);
   template <>

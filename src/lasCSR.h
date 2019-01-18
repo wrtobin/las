@@ -3,6 +3,8 @@
 #include "lasSys.h"
 #include <vector>
 #include <iostream>
+#include <algorithm>
+#include <cassert>
 namespace las
 {
   class Sparsity;
@@ -35,21 +37,29 @@ namespace las
      *       they are converted to use 1-indexing (in a debug build this generates a warning).
      */
     CSR(int r, int c, int nnz, int * rs, int * cs);
+    CSR(int r, int c, int nnz, std::vector<int> const & rs, std::vector<int> const & cs);
     int getNumRows() const { return nr; }
     int getNumCols() const { return nc; }
     int getNumNonzero() const { return nnz; }
+    // return the index into the values array
+    // if the location is not stored then return -1
+    // note rw and cl start at zero
     int operator()(int rw, int cl) const
     {
-      int result = -1;
-      int fst = rws[rw] - 1;
-      while((fst < rws[rw+1] - 2) && (cls[fst] - 1 < cl))
-        ++fst;
-      // the column is correct at offset and the row isn't empty
-      if(cls[fst] - 1 == cl && rws[rw] - 1 <= rws[rw+1] - 2)
-        result = fst;
-      else
-        result = -1;
-      return result;
+      assert(rw < nr && rw>=0);
+      assert(cl < nc && cl>=0);
+      // the row is empty
+      if(rws[rw+1]-rws[rw] == 0)
+        return -1;
+      // this approach finds the correct index in log(n) time where
+      // n is the number of elements on the row
+      typedef std::vector<int>::const_iterator vit_t;
+      vit_t bgn = cls.begin()+rws[rw]-1;
+      vit_t end = cls.begin()+rws[rw+1]-1;
+      std::pair<vit_t, vit_t> bounds = equal_range(bgn, end, cl+1);
+      if(bounds.first == bounds.second)
+        return -1;
+      return bounds.first-cls.begin();
     }
     int * getRows() { return &rws[0]; }
     int * getCols() { return &cls[0]; }

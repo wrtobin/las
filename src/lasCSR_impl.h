@@ -23,6 +23,14 @@ namespace las
         cls[cl]++;
     }
   }
+  LAS_INLINE CSR::CSR(int r, int c, int nnz, std::vector<int> const & rs, std::vector<int> const & cs)
+    : nr(r)
+    , nc(c)
+    , nnz(nnz)
+    , rws(rs)
+    , cls(cs)
+  {
+  }
   LAS_INLINE Sparsity * csrFromArray(int rws, int cls, int nnz, int * row_arr, int * col_arr)
   {
     return reinterpret_cast<Sparsity*>(new CSR(rws,cls,nnz,row_arr,col_arr));

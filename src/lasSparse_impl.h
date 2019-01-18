@@ -8,8 +8,10 @@
 #include <cassert>
 #include <cmath>
 #include <cstring> //memset
+#include <vector>
 namespace las
 {
+  class sparseScalarMatScalarMat;
   class csrMat
   {
     scalar * vls; // nnz +2 (dumy write, 0.0 read)
@@ -24,6 +26,18 @@ namespace las
       //alloc<Malloc>((void**)&vls,sizeof(scalar) * (c->getNumNonzero() + 2));
       vls = new scalar[c->getNumNonzero()+2];
       memset(&vls[0],0,sizeof(scalar)*(csr->getNumNonzero() + 2));
+    }
+    csrMat(CSR * c, std::vector<scalar> const & vals, bool o = false)
+      : csr(c)
+      , own(o)
+    {
+      vls = new scalar[c->getNumNonzero()+2];
+      for(int i=0; i<c->getNumNonzero();++i)
+      {
+        vls[i] = vals[i];
+      }
+      vls[c->getNumNonzero()] = 0;
+      vls[c->getNumNonzero()+1] = 0;
     }
     ~csrMat()
     {
@@ -151,12 +165,13 @@ namespace las
     void _assemble(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
     {
       csrMat * mat = getCSRMat(m);
+      scalar vl;
+      // take advantage of the fact that in general rws, cls sorted
       for(int ii = 0; ii < cntr; ++ii)
         for(int jj = 0; jj < cntc; ++jj)
         {
-          scalar vl = vls[ii * cntc + jj];
-          //if(vl != 0.0) // don't want to attempt to access zero locations in a sparse matrix
-              (*mat)(rws[ii],cls[jj]) += vl;
+          vl = vls[ii * cntc + jj];
+          (*mat)(rws[ii],cls[jj]) += vl;
         }
     }
     void _set(Vec * v, int cnt, int * rws, scalar * vls)
@@ -164,6 +179,11 @@ namespace las
       lasVec * vec = getLASVec(v);
       for(int ii = 0; ii < cnt; ++ii)
         (*vec)[rws[ii]] = vls[ii];
+    }
+    void _set(Vec * v, scalar * vls)
+    {
+      lasVec * vec = getLASVec(v);
+      vec->setVls(vls);
     }
     void _set(Mat * m, int cntr, int * rws, int cntc, int * cls, scalar * vls)
     {
