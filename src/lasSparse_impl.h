@@ -95,14 +95,6 @@ namespace las
       destroyCSRMatrix(m);
     }
   };
-  template <>
-  LAS_INLINE LasCreateMat * getMatBuilder<sparse>(int)
-  {
-    static csrMatBuilder * mb = nullptr;
-    if(mb == nullptr)
-      mb = new csrMatBuilder;
-    return mb;
-  }
   class csrVecBuilder : public LasCreateVec
   {
   public:
@@ -130,14 +122,6 @@ namespace las
       return createVector(rows);
     }
   };
-  template <>
-  LAS_INLINE LasCreateVec * getVecBuilder<sparse>(int)
-  {
-    static csrVecBuilder * vb = nullptr;
-    if(vb == nullptr)
-      vb = new csrVecBuilder;
-    return vb;
-  }
   class sparse : public LasOps<sparse>
   {
   public:
@@ -245,21 +229,5 @@ namespace las
     void _restore(Vec*, scalar *&)
     { }
   };
-  template <>
-  LAS_INLINE LasOps<sparse> * getLASOps()
-  {
-    static sparse * ops = nullptr;
-    if(ops == nullptr)
-      ops = new sparse;
-    return ops;
-  }
-  template <>
-  LAS_INLINE void finalizeMatrix<sparse>(Mat * mat){};
-  template <>
-  LAS_INLINE void finalizeVector<sparse>(Vec * vec){};
-  template <>
-  LAS_INLINE void destroySparsity<sparse>(Sparsity * sprs) {
-    delete reinterpret_cast<CSR*>(sprs);
-  }
 }
 #endif

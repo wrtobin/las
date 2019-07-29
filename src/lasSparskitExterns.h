@@ -2,7 +2,7 @@
 #define LAS_SPARSKIT_EXTERNS_H_
 #include <cmath>
 #include <vector>
-#ifdef BGQ
+#if defined(BGQ) || defined(__ibmxl__)
 extern "C"
 {
   void ilut(int *,double a[],int ja[],int ia[],int *,double *,double *,int *,int *,int *,double *,int *,int *);

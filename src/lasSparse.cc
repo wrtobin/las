@@ -282,4 +282,36 @@ namespace las
     if (vva == nullptr) vva = new sparseVecVecAdd;
     return vva;
   }
+  template <>
+  LasCreateMat * getMatBuilder<sparse>(int)
+  {
+    static csrMatBuilder * mb = nullptr;
+    if(mb == nullptr)
+      mb = new csrMatBuilder;
+    return mb;
+  }
+  template <>
+  LasCreateVec * getVecBuilder<sparse>(int)
+  {
+    static csrVecBuilder * vb = nullptr;
+    if(vb == nullptr)
+      vb = new csrVecBuilder;
+    return vb;
+  }
+  template <>
+  LasOps<sparse> * getLASOps()
+  {
+    static sparse * ops = nullptr;
+    if(ops == nullptr)
+      ops = new sparse;
+    return ops;
+  }
+  template <>
+  void finalizeMatrix<sparse>(Mat * mat){};
+  template <>
+  void finalizeVector<sparse>(Vec * vec){};
+  template <>
+  void destroySparsity<sparse>(Sparsity * sprs) {
+    delete reinterpret_cast<CSR*>(sprs);
+  }
 }  // namespace las

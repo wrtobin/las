@@ -1,6 +1,6 @@
 #include "lasSparskitExterns.h"
 #include <cassert>
-#ifdef BGQ
+#if defined(BGQ) || defined(__ibmxl__)
 void ilut_(int *n,double a[],int ja[],int ia[],int *lfil,double *droptol,double *alu,int *jlu,int *ju,int *iwk,double *w,int *jw,int *ierr)
 {
   ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr);
