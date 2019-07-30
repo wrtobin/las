@@ -280,6 +280,30 @@ namespace las
   };
   template <class T>
   ScalarVecMult * getScalarVecMult();
+  class MatDiagonal
+  {
+    public:
+      virtual void exec(scalar s, Mat * m, Vec *& v) = 0;
+      virtual ~MatDiagonal() {}
+  };
+  template <class T>
+  MatDiagonal * getMatDiagonal();
+  class MatDiagonalInverse
+  {
+    public:
+      virtual void exec(scalar s, Mat * m, Vec *& v) = 0;
+      virtual ~MatDiagonalInverse() {}
+  };
+  template <class T>
+  MatDiagonalInverse * getMatDiagonalInverse();
+  class HadamardProduct
+  {
+    public:
+      virtual void exec(Vec * v1, Vec * v2, Vec * v3) = 0;
+      virtual ~HadamardProduct() {}
+  };
+  template <class T>
+  HadamardProduct * getHadamardProduct();
   /*
    * Finalize routines which must be called on a matrix when switching from
    * add mode to set mode

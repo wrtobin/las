@@ -21,6 +21,12 @@ namespace las
   template <>
   VecVecAdd * getVecVecAdd<sparse>();
   template <>
+  MatDiagonal * getMatDiagonal<sparse>();
+  template <>
+  MatDiagonalInverse * getMatDiagonalInverse<sparse>();
+  template <>
+  HadamardProduct * getHadamardProduct<sparse>();
+  template <>
   void finalizeMatrix<sparse>(Mat * mat);
   template <>
   void finalizeVector<sparse>(Vec * vec);

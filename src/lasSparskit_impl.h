@@ -297,7 +297,7 @@ namespace las
       std::abort();
     }
     bool symmetric = line.find("symmetric") != std::string::npos;
-    int numRows, numCols, nnz;
+    int numRows=0, numCols=0, nnz=0;
     // skip all comment lines until we reach the first data
     while (std::getline(in, line))
     {

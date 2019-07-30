@@ -490,6 +490,7 @@ namespace las
       if (c == nullptr)
       {
         PetscErrorCode ierr = ::MatScale(*getPetscMat(a), s);
+        CHKERRABORT(LAS_COMM_WORLD, ierr);
       }
       else
       {
