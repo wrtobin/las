@@ -230,6 +230,15 @@ namespace las
     CHKERRABORT(LAS_COMM_WORLD, ierr);
     return reinterpret_cast<las::Vec*>(v);
   }
+  LAS_INLINE las::Vec * createPetscVector(scalar * data, unsigned l, unsigned bs, MPI_Comm cm = LAS_COMM_WORLD)
+  {
+    ::Vec * v = new ::Vec;
+    PetscErrorCode ierr = VecCreateMPIWithArray(cm, bs, l,PETSC_DECIDE,data, v);
+    CHKERRABORT(LAS_COMM_WORLD, ierr);
+    ierr = VecSetOption(*v,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);
+    CHKERRABORT(LAS_COMM_WORLD, ierr);
+    return reinterpret_cast<las::Vec*>(v);
+  }
   LAS_INLINE void destroyPetscVec(las::Vec * v)
   {
     PetscErrorCode ierr = VecDestroy(getPetscVec(v));
@@ -254,6 +263,10 @@ namespace las
     virtual Vec * create(unsigned lcl, unsigned bs, MPI_Comm cm)
     {
       return createPetscVector(lcl,bs,cm);
+    }
+    virtual Vec * create(scalar * data, unsigned lcl, unsigned bs, MPI_Comm cm)
+    {
+      return createPetscVector(data, lcl,bs,cm);
     }
     virtual Vec * createRHS(Mat * m)
     {

@@ -59,11 +59,14 @@ namespace las
     matrix.assign(matrix.size(),0.0);
   }
   void SparskitBuffers::resizeMatrixBuffer(int newSize) {
-    assert((newSize-matrixLength()) > 0);
-    heuristic_length = newSize;
-    matrix.resize(heuristic_length);
-    cols.resize(heuristic_length);
-    assert(cols.size() == heuristic_length);
-    assert(matrix.size() == heuristic_length);
+    // only support increasing the buffer size
+    if(newSize > matrixLength())
+    {
+      heuristic_length = newSize;
+      matrix.resize(heuristic_length);
+      cols.resize(heuristic_length);
+      assert(cols.size() == heuristic_length);
+      assert(matrix.size() == heuristic_length);
+    }
   }
 };

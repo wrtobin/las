@@ -156,6 +156,14 @@ namespace las
      * @param cm The comm over which the vector is collective.
      */
     virtual Vec * create(unsigned lcl, unsigned bs, MPI_Comm cm) = 0;
+    /**
+     * Create a vector from an existing array
+     * @param data The array which the vector will use as data storage
+     * @param lcl The local number of rows (per-process in cm)
+     * @param bs The block size (should be the same over cm)
+     * @param cm The comm over which the vector is collective.
+     */
+    virtual Vec * create(scalar * data, unsigned lcl, unsigned bs, MPI_Comm cm)=0;
     virtual void destroy(Vec * v) = 0;
     /**
      * Create a vector suitable to act as the RHS vector to a

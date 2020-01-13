@@ -5,6 +5,7 @@
 #include <lasSys.h>
 #include <cassert>
 #include <cstring> // memset
+#include <iostream>
 namespace las
 {
   class lasVec
@@ -12,12 +13,22 @@ namespace las
   private:
     scalar * vls;
     int cnt;
+    // this is a data location that any negative indices will 
+    // sum into
+    scalar dummy_data;
   public:
     lasVec(int n)
       : vls(nullptr)
       , cnt(n)
+      , dummy_data(0)
     {
-      alloc<Malloc>((void**)&vls,sizeof(scalar)*(n+1));
+      alloc<Malloc>((void**)&vls,sizeof(scalar)*n);
+    }
+    lasVec(scalar * data, int n)
+      : vls(data)
+      , cnt(n)
+      , dummy_data(0)
+    {
     }
     ~lasVec()
     {
@@ -27,7 +38,7 @@ namespace las
     {
       assert(idx < cnt);
       if(idx < 0)
-        idx = cnt;
+        return dummy_data;
       return vls[idx];
     }
     void setVls(scalar * values) {
@@ -41,7 +52,8 @@ namespace las
     // too coupled to the implementation to leave external
     void zero()
     {
-      memset(&vls[0],0,sizeof(scalar)*(cnt+1));
+      memset(&vls[0],0,sizeof(scalar)*cnt);
+      dummy_data = 0;
     }
   };
   LAS_INLINE lasVec * getLASVec(Vec * v)
@@ -51,6 +63,10 @@ namespace las
   LAS_INLINE Vec * createVector(unsigned n)
   {
     return reinterpret_cast<Vec*>(new lasVec(n));
+  }
+  LAS_INLINE Vec * createVector(scalar * data, unsigned n)
+  {
+    return reinterpret_cast<Vec*>(new lasVec(data,n));
   }
   LAS_INLINE void destroyVector(Vec * v)
   {

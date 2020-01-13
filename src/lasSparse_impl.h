@@ -103,6 +103,10 @@ namespace las
     {
       return createVector(lcl);
     }
+    virtual Vec * create(scalar * data, unsigned lcl, unsigned, MPI_Comm)
+    {
+      return createVector(data, lcl);
+    }
     virtual void destroy(Vec * v) 
     {
       destroyVector(v);
