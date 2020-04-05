@@ -4,7 +4,8 @@
 #if USE_MPI == 1
 #include <mpi.h>
 #else
-typdef int MPI_Comm
+typedef int MPI_Comm;
+extern MPI_Comm MPI_COMM_SELF;
 #endif
 extern MPI_Comm LAS_COMM_WORLD;
 #endif

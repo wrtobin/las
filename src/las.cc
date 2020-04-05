@@ -1,7 +1,9 @@
 #include "las.h"
 #include "lasDebug.h"
 #include <iostream>
-#include <lasPETSc.h>
+#ifdef HAVE_PETSC
+  #include <lasPETSc.h>
+#endif
 namespace las
 {
   void initLAS(int * argc, char *** args, MPI_Comm cm) {
