@@ -5,30 +5,6 @@ namespace las
   class sparseMatVec : public MatVecMult
   {
     public:
-      /*
-    void exec(Mat * x, Vec * a, Vec * b)
-    {
-      csrMat * cm = getCSRMat(x);
-      CSR * csr = cm->getCSR();
-      lasVec * sa = getLASVec(a);
-      lasVec * sb = getLASVec(b);
-      int nr = csr->getNumRows();
-      int nc = csr->getNumCols();
-      int la = sa->size();
-      int lb = sb->size();
-      assert(nc == la && "Matrix columns and lhs vector length must match");
-      assert(nr == lb && "Matrix rows and rhs vector length must match");
-      for (int rw = 0; rw < nr; ++rw)
-      {
-        double val = 0;
-        for (int cl = 0; cl < nc; ++cl)
-        {
-          val += (*cm)(rw, cl) * (*sa)[cl];
-        }
-        (*sb)[rw] = val;
-      }
-    }
-    */
     void exec(Mat * x, Vec * a, Vec * b)
     {
       csrMat * cm = getCSRMat(x);
@@ -39,9 +15,11 @@ namespace las
       lasVec * sa = getLASVec(a);
       lasVec * sb = getLASVec(b);
       int nr = csr->getNumRows();
+#ifndef NDEBUG
       int nc = csr->getNumCols();
       int la = sa->size();
       int lb = sb->size();
+#endif
       double val;
       assert(nc == la && "Matrix columns and lhs vector length must match");
       assert(nr == lb && "Matrix rows and rhs vector length must match");
@@ -67,7 +45,9 @@ namespace las
       CSR * y_csr = cy->getCSR();
       int x_nr = x_csr->getNumRows();
       int x_nc = x_csr->getNumCols();
+#ifndef NDEBUG
       int y_nr = y_csr->getNumRows();
+#endif
       int y_nc = y_csr->getNumCols();
       assert(x_nc == y_nr && "Matrix X cols must equal Matrix Y rows");
       CSRBuilder bld(x_nr, x_nr);
@@ -247,6 +227,67 @@ namespace las
       v3 = reinterpret_cast<Vec *>(sv3);
     }
   };
+  class sparseMatDiagonal : public MatDiagonal
+  {
+      void exec(scalar s, Mat * m, Vec *& v)
+      {
+        csrMat * cm = getCSRMat(m);
+        CSR * csr = cm->getCSR();
+        lasVec * sv;
+        assert(csr->getNumCols() == csr->getNumRows());
+        if (v)
+        {
+            destroyVector(v);
+            sv = reinterpret_cast<lasVec *>(createVector(csr->getNumRows()));
+        }
+        else
+        {
+          sv = reinterpret_cast<lasVec *>(createVector(csr->getNumRows()));
+        }
+        for(int i=0; i<csr->getNumRows(); ++i) {
+          (*sv)[i] = s*(*cm)(i,i);
+        }
+        v = reinterpret_cast<Vec *>(sv);
+      }
+  };
+  class sparseMatDiagonalInverse : public MatDiagonalInverse
+  {
+      void exec(scalar s, Mat * m, Vec *& v)
+      {
+        csrMat * cm = getCSRMat(m);
+        CSR * csr = cm->getCSR();
+        lasVec * sv;
+        assert(csr->getNumCols() == csr->getNumRows());
+        if (v)
+        {
+            destroyVector(v);
+            sv = reinterpret_cast<lasVec *>(createVector(csr->getNumRows()));
+        }
+        else
+        {
+          sv = reinterpret_cast<lasVec *>(createVector(csr->getNumRows()));
+        }
+        for(int i=0; i<csr->getNumRows(); ++i) {
+          (*sv)[i] = s/(*cm)(i,i);
+        }
+        v = reinterpret_cast<Vec *>(sv);
+      }
+  };
+  class sparseHadamardProduct : public HadamardProduct
+  {
+      void exec(Vec * v1, Vec * v2, Vec * v3)
+      {
+        lasVec * sv1 = getLASVec(v1);
+        lasVec * sv2 = getLASVec(v2);
+        lasVec * sv3 = getLASVec(v3);
+        assert(sv1->size() == sv2->size());
+        assert(sv1->size() == sv3->size());
+        for(int i=0; i<sv1->size(); ++i)
+        {
+          (*sv3)[i] = (*sv1)[i]*(*sv2)[i];
+        }
+      };
+  };
   template <>
   MatVecMult * getMatVecMult<sparse>()
   {
@@ -281,5 +322,59 @@ namespace las
     static sparseVecVecAdd * vva = nullptr;
     if (vva == nullptr) vva = new sparseVecVecAdd;
     return vva;
+  }
+  template <>
+  LasCreateMat * getMatBuilder<sparse>(int)
+  {
+    static csrMatBuilder * mb = nullptr;
+    if(mb == nullptr)
+      mb = new csrMatBuilder;
+    return mb;
+  }
+  template <>
+  LasCreateVec * getVecBuilder<sparse>(int)
+  {
+    static csrVecBuilder * vb = nullptr;
+    if(vb == nullptr)
+      vb = new csrVecBuilder;
+    return vb;
+  }
+  template <>
+  LasOps<sparse> * getLASOps()
+  {
+    static sparse * ops = nullptr;
+    if(ops == nullptr)
+      ops = new sparse;
+    return ops;
+  }
+  template <>
+  void finalizeMatrix<sparse>(Mat * mat){};
+  template <>
+  void finalizeVector<sparse>(Vec * vec){};
+  template <>
+  void destroySparsity<sparse>(Sparsity * sprs)
+  {
+    delete reinterpret_cast<CSR*>(sprs);
+  }
+  template <>
+  MatDiagonal * getMatDiagonal<sparse>()
+  {
+    static sparseMatDiagonal * dia = nullptr;
+    if (dia == nullptr) dia = new sparseMatDiagonal;
+    return dia;
+  }
+  template <>
+  MatDiagonalInverse * getMatDiagonalInverse<sparse>()
+  {
+    static sparseMatDiagonalInverse * dia = nullptr;
+    if (dia == nullptr) dia = new sparseMatDiagonalInverse;
+    return dia;
+  }
+  template <>
+  HadamardProduct * getHadamardProduct<sparse>()
+  {
+    static sparseHadamardProduct * hp = nullptr;
+    if (hp == nullptr) hp = new sparseHadamardProduct;
+    return hp;
   }
 }  // namespace las

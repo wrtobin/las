@@ -26,7 +26,7 @@ endif()
 
 add_library(las_core STATIC ${las_core_sources})
 if(${CMAKE_VERSION} VERSION_GREATER "3.8.2")
-  target_compile_features(las_core PUBLIC cxx_std_11)
+  #target_compile_features(las_core PUBLIC cxx_std_11)
 endif()
 if(MPI_COMPILE_FLAGS)
   set_target_properties(las_core PROPERTIES COMPILE_FLAGS ${MPI_CXX_COMPILE_DEFINITIONS})

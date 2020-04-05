@@ -11,8 +11,10 @@ namespace las
       lasVec * vb = getLASVec(b);
       int nr = dns->getNumRows();
       int nc = dns->getNumCols();
+#ifndef NDEBUG
       int la = va->size();
       int lb = vb->size();
+#endif
       assert(nc == la && "Matrix columns and lhs vector length must match");
       assert(nr == lb && "Matrix rows and rhs vector lenght must match");
       for(int rw = 0; rw < nr; ++rw)
@@ -29,7 +31,9 @@ namespace las
       dnsMat * y = getDnsMat(ym);
       int x_nr = x->getNumRows();
       int x_nc = x->getNumCols();
+#ifndef NDEBUG
       int y_nr = y->getNumRows();
+#endif
       int y_nc = y->getNumCols();
       assert(x_nc == y_nr && "Matrix X cols must equal matrix Y rows");
       Sparsity * dnsty = createDensity(x_nr,y_nc);

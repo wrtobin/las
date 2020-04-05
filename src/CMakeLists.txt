@@ -89,11 +89,11 @@ configure_file(lasConfig.h.in "${CMAKE_CURRENT_SOURCE_DIR}/lasConfig.h" @ONLY)
 set(las_headers ${las_headers} ${las_install} lasConfig.h)
 
 add_library(las STATIC ${las_sources})
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
+if("${HOST}" STREQUAL "q.ccni.rpi.edu")
   target_compile_definitions(las PUBLIC "-DBGQ")
 endif()
 if(${CMAKE_VERSION} VERSION_GREATER "3.8.2")
-  target_compile_features(las PUBLIC cxx_std_11)
+  #target_compile_features(las PUBLIC cxx_std_11)
 endif()
 if(CUDA_FOUND)
   set_target_properties(las PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -131,7 +131,7 @@ function(add_backend backend headers libraries)
     ${CMAKE_CURRENT_BINARY_DIR}/capi/las_capi_${backend}.cc
     ${headers})
   if(${CMAKE_VERSION} VERSION_GREATER "3.8.2")
-    target_compile_features(${capi_lib} PUBLIC cxx_std_11)
+    #target_compile_features(${capi_lib} PUBLIC cxx_std_11)
   endif()
   target_include_directories(${capi_lib} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

@@ -1,6 +1,6 @@
 #include "lasSparskitExterns.h"
 #include <cassert>
-#ifdef BGQ
+#if defined(BGQ) || defined(__ibmxl__)
 void ilut_(int *n,double a[],int ja[],int ia[],int *lfil,double *droptol,double *alu,int *jlu,int *ju,int *iwk,double *w,int *jw,int *ierr)
 {
   ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr);
@@ -59,11 +59,14 @@ namespace las
     matrix.assign(matrix.size(),0.0);
   }
   void SparskitBuffers::resizeMatrixBuffer(int newSize) {
-    assert((newSize-matrixLength()) > 0);
-    heuristic_length = newSize;
-    matrix.resize(heuristic_length);
-    cols.resize(heuristic_length);
-    assert(cols.size() == heuristic_length);
-    assert(matrix.size() == heuristic_length);
+    // only support increasing the buffer size
+    if(newSize > matrixLength())
+    {
+      heuristic_length = newSize;
+      matrix.resize(heuristic_length);
+      cols.resize(heuristic_length);
+      assert(cols.size() == heuristic_length);
+      assert(matrix.size() == heuristic_length);
+    }
   }
 };

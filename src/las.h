@@ -156,6 +156,14 @@ namespace las
      * @param cm The comm over which the vector is collective.
      */
     virtual Vec * create(unsigned lcl, unsigned bs, MPI_Comm cm) = 0;
+    /**
+     * Create a vector from an existing array
+     * @param data The array which the vector will use as data storage
+     * @param lcl The local number of rows (per-process in cm)
+     * @param bs The block size (should be the same over cm)
+     * @param cm The comm over which the vector is collective.
+     */
+    virtual Vec * create(scalar * data, unsigned lcl, unsigned bs, MPI_Comm cm)=0;
     virtual void destroy(Vec * v) = 0;
     /**
      * Create a vector suitable to act as the RHS vector to a
@@ -280,6 +288,30 @@ namespace las
   };
   template <class T>
   ScalarVecMult * getScalarVecMult();
+  class MatDiagonal
+  {
+    public:
+      virtual void exec(scalar s, Mat * m, Vec *& v) = 0;
+      virtual ~MatDiagonal() {}
+  };
+  template <class T>
+  MatDiagonal * getMatDiagonal();
+  class MatDiagonalInverse
+  {
+    public:
+      virtual void exec(scalar s, Mat * m, Vec *& v) = 0;
+      virtual ~MatDiagonalInverse() {}
+  };
+  template <class T>
+  MatDiagonalInverse * getMatDiagonalInverse();
+  class HadamardProduct
+  {
+    public:
+      virtual void exec(Vec * v1, Vec * v2, Vec * v3) = 0;
+      virtual ~HadamardProduct() {}
+  };
+  template <class T>
+  HadamardProduct * getHadamardProduct();
   /*
    * Finalize routines which must be called on a matrix when switching from
    * add mode to set mode
