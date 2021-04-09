@@ -34,7 +34,7 @@ function(simple_test name file)
   add_test(NAME "${name}_test" COMMAND ${name})
 endfunction(simple_test)
 
-if(CUDA_FOUND)
+if(WITH_CUDA)
   message(STATUS "Adding CUDA test cases:")
   simple_test(cusparse cusparse.cc)
   target_link_libraries(cusparse las)
