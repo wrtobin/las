@@ -14,14 +14,12 @@ endif()
 
 
 
-if(${WITH_PETSC})
-  find_package(PETSc REQUIRED)
+if(WITH_PETSC)
   set(las_core_petsc_install lasCorePETSc.h)
   set(las_core_petsc_sources lasCorePETSc.cc)
   set(las_core_install ${las_core_install} ${las_core_petsc_install})
   set(las_core_sources ${las_core_sources} ${las_core_petsc_sources})
-  set(link_libs ${link_libs} ${PETSC_LIBRARIES})
-  set(include_dirs ${include_dirs} ${PETSC_INCLUDE_DIRS})
+  set(link_libs ${link_libs} PkgConfig::PETSc)
 endif()
 
 add_library(las_core STATIC ${las_core_sources})

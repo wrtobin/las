@@ -51,15 +51,14 @@ endif()
 configure_file(lasComm.h.in "${CMAKE_CURRENT_SOURCE_DIR}/lasComm.h" @ONLY)
 #find_package(MPI) # should actually make sure we're compiling with mpi support/compilers
 
-if ("${WITH_PETSC}")
-  find_package(PETSc REQUIRED)
+if (WITH_PETSC)
   message(STATUS "Building with PETSc support.")
   set(petsc_api_headers lasPETSc.h)
   set(petsc_impl_headers lasPETSc_impl.h)
   to_include(petsc_api_headers package_include_headers)
   set(las_install ${las_install} ${petsc_api_headers} ${petsc_impl_headers})
-  set(link_libs ${link_libs} ${PETSC_LIBRARIES})
-  set(include_dirs ${include_dirs} ${PETSC_INCLUDE_DIRS})
+  set(link_libs ${link_libs} PkgConfig::PETSc)
+  set(include_dirs ${include_dirs})
 endif()
 
 # handle configuretion based on found packages
@@ -160,7 +159,7 @@ if(WITH_CUDA)
 endif()
 if("${WITH_PETSC}")
   target_compile_definitions(las PUBLIC HAVE_PETSC)
-  add_backend(petsc "${petsc_api_headers}" ${PETSC_LIBRARIES})
+  add_backend(petsc "${petsc_api_headers}" PkgConfig::PETSc)
 endif()
 
 include(CMakePackageConfigHelpers)

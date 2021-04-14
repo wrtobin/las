@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR) # version 3.8 adds cuda as a language, 3.9 has better VS integration
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR) # version 3.8 adds cuda as a language, 3.9 has better VS integration
 project(las)
 set(LAS_MAJOR_VERSION 0)
 set(LAS_MINOR_VERSION 1)
@@ -132,3 +132,8 @@ endif(BUILD_TESTS)
 option(WITH_PETSC "build petsc backend" OFF)
 option(WITH_MPI "build with MPI" OFF)
 option(WITH_CUDA "build with cuda support" OFF)
+if (WITH_PETSC)
+  message(STATUS "Configure PETSc support")
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(PETSc REQUIRED IMPORTED_TARGET GLOBAL PETSc)
+endif()
