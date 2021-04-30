@@ -137,3 +137,9 @@ if (WITH_PETSC)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(PETSc REQUIRED IMPORTED_TARGET GLOBAL PETSc)
 endif()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/lasConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake/lasConfig.cmake @ONLY)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/lasConfig.cmake
+        DESTINATION ${ConfigPackageLocation})

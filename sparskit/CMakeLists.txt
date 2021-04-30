@@ -11,4 +11,4 @@ set(sparskit_source
   src/tred2EISPACK.f
   src/utils.f )
 add_library(sparskit STATIC ${sparskit_source})
-install(TARGETS sparskit EXPORT lasConfig DESTINATION lib)
+install(TARGETS sparskit EXPORT las_las DESTINATION lib)
