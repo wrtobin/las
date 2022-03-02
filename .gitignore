@@ -9,3 +9,4 @@ build*/
 src/lasComm.h
 src/lasConfig.h
 compile_commands.json
+spack*
